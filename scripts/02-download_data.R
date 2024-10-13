@@ -1,25 +1,18 @@
-# Load required libraries
-library(httr)
-library(readr)
+#### Preamble ####
+# Purpose: Downloads and saves the data from fivethirtyeight.
+# Author: Haowei Fan, Fangning Zhang, Shaotong Li
+# Date: 13 October 2024
+# Contact: haowei.fan@mail.utoronto.ca
+# License: MIT
+# Pre-requisites: None
+# Any other information needed? None
 
-# Specify the URL for the polling data
+#### Download data ####
 url <- "https://projects.fivethirtyeight.com/polls/data/president_polls.csv"
+the_raw_data <- read.csv(url)
 
-# Specify the local file path where the CSV will be saved
-output_file <- "president_polls.csv"
+#### Save data ####
+# [...UPDATE THIS...]
+# change the_raw_data to whatever name you assigned when you downloaded it.
+write_csv(the_raw_data, "data/01-raw_data/raw_data.csv") 
 
-# Download the CSV file
-response <- GET(url)
-
-# Check if the request was successful
-if (status_code(response) == 200) {
-  # Write the content to a local CSV file
-  writeBin(content(response, "raw"), output_file)
-  message("File downloaded successfully!")
-} else {
-  message("Failed to download the file. Status code: ", status_code(response))
-}
-
-# Optional: Read and display the data
-polls_data <- read_csv(output_file)
-print(head(polls_data))
