@@ -7,6 +7,9 @@
 # Pre-requisites: None
 # Any other information needed? None
 
+#### Workspace setup ####
+library(tidyverse)
+
 #### Download data ####
 url <- "https://projects.fivethirtyeight.com/polls/data/president_polls.csv"
 the_raw_data <- read.csv(url)
