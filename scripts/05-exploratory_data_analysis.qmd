@@ -1,0 +1,171 @@
+#### Preamble ####
+# Purpose: Models... [...UPDATE THIS...]
+# Author: Rohan Alexander [...UPDATE THIS...]
+# Date: 11 February 2023 [...UPDATE THIS...]
+# Contact: rohan.alexander@utoronto.ca [...UPDATE THIS...]
+# License: MIT
+# Pre-requisites: [...UPDATE THIS...]
+# Any other information needed? [...UPDATE THIS...]
+
+```{r}
+#### Workspace setup ####
+library(tidyverse)
+library(rstanarm)
+
+#### Read data ####
+analysis_data <- read_csv(here::here("data/01-raw_data/raw_data.csv"))
+```
+
+```{r}
+# Check for missing values in each column
+missing_values <- sapply(analysis_data, function(x) sum(is.na(x)))
+print(missing_values)
+```
+
+```{r}
+# Get unique pollster IDs
+unique_pollster_ids <- unique(analysis_data$pollster_id)
+print(unique_pollster_ids)
+```
+```{r}
+# Get unique question IDs
+unique_question_ids <- unique(analysis_data$question_id)
+print(unique_question_ids)
+```
+```{r}
+unique_question_ids_str <- paste(unique(unique_question_ids), collapse = ",")
+print(unique_question_ids_str)
+```
+
+```{r}
+View(unique_question_ids_str)
+```
+
+
+
+```{r}
+# Get the maximum and minimum values of numeric_grade
+max_numeric_grade <- max(analysis_data$numeric_grade, na.rm = TRUE)
+min_numeric_grade <- min(analysis_data$numeric_grade, na.rm = TRUE)
+print(paste("Maximum numeric grade:", max_numeric_grade))
+print(paste("Minimum numeric grade:", min_numeric_grade))
+```
+
+```{r}
+# Plot histogram of numeric_grade
+ggplot(analysis_data, aes(x = numeric_grade)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "black") +
+  theme_minimal() +
+  labs(title = "Histogram of Numeric Grade", x = "Numeric Grade", y = "Count")
+```
+```{r}
+# Plot histogram of pollscore
+ggplot(analysis_data, aes(x = pollscore)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "black") +
+  theme_minimal() +
+  labs(title = "Histogram of pollscore", x = "pollscore", y = "Count")
+```
+```{r}
+# Get unique methodologys
+unique_methodologys <- unique(analysis_data$methodology)
+print(unique_methodologys)
+```
+```{r}
+# Plot histogram of transparency_score
+ggplot(analysis_data, aes(x = transparency_score)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "black") +
+  theme_minimal() +
+  labs(title = "Histogram of transparency_score", x = "transparency_score", y = "Count")
+```
+```{r}
+# Find the earliest start date and the latest end date
+earliest_start_date <- min(analysis_data$start_date, na.rm = TRUE)
+latest_end_date <- max(analysis_data$end_date, na.rm = TRUE)
+print(paste("Earliest start date:", earliest_start_date))
+print(paste("Latest end date:", latest_end_date))
+```
+
+```{r}
+# Plot histogram of sample_size
+ggplot(analysis_data, aes(x = sample_size)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "black") +
+  theme_minimal() +
+  labs(title = "Histogram of sample_size", x = "sample_size", y = "Count")
+```
+```{r}
+# Get unique population
+unique_population <- unique(analysis_data$population)
+print(unique_population)
+```
+```{r}
+# Get unique race_id
+unique_race_id <- unique(analysis_data$race_id)
+print(unique_race_id)
+```
+
+```{r}
+unique_race_id_str <- paste(unique(unique_race_id), collapse = ",")
+clipr::write_clip(unique_race_id_str)
+```
+
+```{r}
+# Get unique stage
+unique_stage <- unique(analysis_data$stage)
+print(unique_stage)
+```
+
+```{r}
+# Get unique stage
+unique_nationwide_batch <- unique(analysis_data$nationwide_batch)
+print(unique_nationwide_batch)
+```
+
+```{r}
+# Get unique ranked_choice_reallocated
+unique_ranked_choice_reallocated <- unique(analysis_data$ranked_choice_reallocated)
+print(unique_ranked_choice_reallocated)
+```
+
+```{r}
+# Get unique hypothetical
+unique_hypothetical <- unique(analysis_data$hypothetical)
+print(unique_hypothetical)
+```
+```{r}
+# Calculate the ratio of FALSE to TRUE in the hypothetical column
+hypothetical_ratio <- table(simulated_candidate_1$hypothetical)
+print(hypothetical_ratio)
+false_to_true_ratio <- hypothetical_ratio["FALSE"] / hypothetical_ratio["TRUE"]
+print(paste("False to True Ratio:", false_to_true_ratio))
+```
+
+```{r}
+# Get unique party
+unique_party <- unique(analysis_data$party)
+print(unique_party)
+```
+
+
+```{r}
+# Find the maximum difference between start_date and end_date
+date_diff <- simulated_candidate_1 %>%
+  mutate(date_difference = as.numeric(difftime(end_date, start_date, units = "days"))) %>%
+  summarise(max_difference = max(date_difference))
+
+print(date_diff)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
