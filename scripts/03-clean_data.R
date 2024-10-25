@@ -11,7 +11,12 @@
 library(tidyverse)
 library(dplyr)
 
-clean_data <- function(input_file, output_file) {
+clean_data <- function(input_file, output_dir) {
+  # Ensure output directory exists
+  if (!dir.exists(output_dir)) {
+    dir.create(output_dir, recursive = TRUE)
+  }
+  
   # Load data
   president_polls <- read.csv(input_file)
   
@@ -37,19 +42,28 @@ clean_data <- function(input_file, output_file) {
   president_polls$pollscore[is.na(president_polls$pollscore)] <- 0
   president_polls$numeric_grade[is.na(president_polls$numeric_grade)] <- 0
   
-  # Select required columns, excluding "source"
-  cleaned_data <- president_polls %>%
-    select(pollscore, numeric_grade, duration, sample_size, population, party, 
-           hypothetical, internal, pct)
+  # Group data by candidate_name
+  candidates <- unique(president_polls$candidate_name)
   
-  # Save the cleaned data to CSV
-  write.csv(cleaned_data, file = output_file, row.names = FALSE)
+  for (candidate in candidates) {
+    # Filter data for each candidate
+    candidate_data <- president_polls %>%
+      filter(candidate_name == candidate) %>%
+      select(pollscore, numeric_grade, duration, sample_size, population, party, 
+             hypothetical, internal)
+    
+    # Define output file path for each candidate
+    output_file <- file.path(output_dir, paste0(candidate, "_cleaned_data.csv"))
+    
+    # Save each candidate's cleaned data to a separate CSV
+    write.csv(candidate_data, file = output_file, row.names = FALSE)
+  }
   
-  # Return the cleaned data
-  return(cleaned_data)
+  return(invisible())
 }
 
 # Usage example
 input_file <- "data/01-raw_data/raw_data.csv"   
-output_file <- "data/03-cleaned_data/cleaned_data.csv"  
+output_file <- "data/03-cleaned_data/cleaned_data_by_candidate"  
 cleaned_data <- clean_data(input_file, output_file)
+
