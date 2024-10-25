@@ -149,8 +149,9 @@ print(unique_party)
 
 
 ```{r}
-linear_model <- lm(pct ~ numeric_grade + pollscore + transparency_score + sample_size + partisan + methodology + population + race_id + stage + nationwide_batch + ranked_choice_reallocated + hypothetical, data = analysis_data)
-summary(linear_model)
+# Get unique population
+unique_population <- unique(analysis_data$population)
+print(unique_population)
 ```
 
 
