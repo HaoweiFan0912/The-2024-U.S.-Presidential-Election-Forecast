@@ -155,6 +155,11 @@ print(unique_population)
 ```
 
 
+```{r}
+# Find the range of pollscore in the original dataset
+pollscore_range <- range(analysis_data$pollscore, na.rm = TRUE)
+print(paste("Pollscore range:", pollscore_range[1], "to", pollscore_range[2]))
+```
 
 
 
