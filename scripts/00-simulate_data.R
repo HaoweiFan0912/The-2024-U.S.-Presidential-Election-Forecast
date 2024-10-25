@@ -174,6 +174,6 @@ simulated_candidate_3$score =
   , 2)
     
 #### Save data ####
-write_csv(simulated_candidate_1, "data/00-simulated_data/simulated_candidate_1") 
-write_csv(simulated_candidate_2, "data/00-simulated_data/simulated_candidate_2") 
-write_csv(simulated_candidate_3, "data/00-simulated_data/simulated_candidate_3") 
+write_csv(simulated_candidate_1, "data/00-simulated_data/simulated_candidate_1.csv") 
+write_csv(simulated_candidate_2, "data/00-simulated_data/simulated_candidate_2.csv") 
+write_csv(simulated_candidate_3, "data/00-simulated_data/simulated_candidate_3.csv") 
