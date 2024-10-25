@@ -1,0 +1,4 @@
+"poll_id","pollscore","numeric_grade","transparency_score","duration","sample_size","population","hypothetical","Methodology"
+86685,1.6,9.7,8.9,5,1688,"lv","true","level3"
+83925,1.2,9.7,0,1,1000,"rv","true","level2"
+83142,2.2,9,0,3,1020,"lv","true","level3"
