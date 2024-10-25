@@ -19,12 +19,12 @@ set.seed(123)
 simulated_candidate_1 <- tibble(
   poll_id = 1:500, 
   # Generate numeric_grade based on a normal distribution with mean 2 and standard deviation 1.2,
-  # then ensure the values are within the range [0, 3] and round to one decimal places
-  numeric_grade = round(pmin(pmax(rnorm(500, mean = 2, sd = 1.2), 0), 3), 1),
+  # then ensure the values are within the range [0, 3] and round to two decimal places, then map to a range of 0 to 10
+  numeric_grade = round((pmin(pmax(rnorm(500, mean = 2, sd = 1.2), 0), 3) / 3) * 10, 2),
   
   # Generate pollscore based on a normal distribution with mean -0.5 and variance 0.3,
-  # then ensure the values are within the range [-1, 1] and round to one decimal place
-  pollscore = round(pmin(pmax(rnorm(500, mean = -0.5, sd = sqrt(0.3)), -1), 1), 1),
+  # then ensure the values are within the range [-1, 1] and round to one decimal place, then map to a range of 0 to 10
+  pollscore = round((pmin(pmax(rnorm(500, mean = -0.5, sd = sqrt(0.3)), -1), 1) + 1) * 5, 1),
   
   methodology = sample(c(
     "Online Panel", "App Panel", "IVR/Text", "Online Ad", "IVR/Online Panel/Text-to-Web",
@@ -41,10 +41,8 @@ simulated_candidate_1 <- tibble(
     "Live Phone/Online Panel/Mail-to-Web", "IVR/Text-to-Web/Email"), 500, replace = TRUE),
   
   # Generate transparency_score based on a normal distribution with mean 6 and variance 1.5,
-  # then ensure the values are within the range [1, 10], round to the nearest 0.5
-  transparency_score = round(pmin(pmax(rnorm(500, mean = 6, sd = sqrt(1.5)), 1), 10) * 2) / 2,
-  
-  state = sample(state.abb, 500, replace = TRUE),
+  # then ensure the values are within the range [1, 10], round to the nearest 0.5, then map to a range of 0 to 10
+  transparency_score = round((pmin(pmax(rnorm(500, mean = 6, sd = sqrt(1.5)), 1), 10) / 10) * 10, 1),
   
   duration = round(pmin(pmax(rnorm(500, mean = 183, sd = 100), 15), 365)),
   
@@ -57,19 +55,8 @@ simulated_candidate_1 <- tibble(
   
   population = sample(c("a", "v", "lv", "rv"), 500, replace = TRUE),
   
-  # Partisan should be NA, otherwise the poll will be biased.
-  partisan = sample(c(NA), 500, replace = TRUE),
-  
-  
-  race_id = sample(c(8914,8765,8866,8905,8902,8869,8778,8759,8781,8820,8857,8839,
-                     8872,8880,8889,8886,8811,8814,8863,8762,8823,8854,8848,8826,
-                     8749,8833,8845,8892,8794,8895,8851,8842,8860,8797,8788,8837,
-                     8775,8877,8768,8817,8809,8810,8755,8908,8899,8883,8806,8785,
-                     8752,8791,8800,8803,8830,8911), 500, replace = TRUE),
-  
-  hypothetical = sample(c(TRUE, FALSE), 500, replace = TRUE),
-  
-  party = rep(sample(c("DEM", "REP", "GRE", "LIB", "IND", "CON", "PSL", "UNK", "OTH"), 1), 500),
+  # Set TRUE/FALSE ratio to 0.3 for the hypothetical column
+  hypothetical = sample(c(TRUE, FALSE), 500, replace = TRUE, prob = c(0.3, 0.7)),
   
   score = rep(NA)
 )
@@ -86,8 +73,6 @@ simulated_candidate_1$score =
          ifelse((simulated_candidate_1$sample_size >= 3000) & (simulated_candidate_1$sample_size <= 8000), 7, 
                 ifelse(simulated_candidate_1$sample_size < 3000, 3, 0
                        ))) +
-  
-  ifelse(simulated_candidate_1$party %in% c("DEM", "REP"), 10, 3) +
   
   ifelse(simulated_candidate_1$hypothetical, 0, 3) +
   

@@ -133,7 +133,7 @@ print(unique_hypothetical)
 ```
 ```{r}
 # Calculate the ratio of FALSE to TRUE in the hypothetical column
-hypothetical_ratio <- table(simulated_candidate_1$hypothetical)
+hypothetical_ratio <- table(analysis_data$hypothetical)
 print(hypothetical_ratio)
 false_to_true_ratio <- hypothetical_ratio["FALSE"] / hypothetical_ratio["TRUE"]
 print(paste("False to True Ratio:", false_to_true_ratio))
@@ -146,15 +146,12 @@ print(unique_party)
 ```
 
 
+
+
 ```{r}
-# Find the maximum difference between start_date and end_date
-date_diff <- simulated_candidate_1 %>%
-  mutate(date_difference = as.numeric(difftime(end_date, start_date, units = "days"))) %>%
-  summarise(max_difference = max(date_difference))
-
-print(date_diff)
+linear_model <- lm(pct ~ numeric_grade + pollscore + transparency_score + sample_size + partisan + methodology + population + race_id + stage + nationwide_batch + ranked_choice_reallocated + hypothetical, data = analysis_data)
+summary(linear_model)
 ```
-
 
 
 
