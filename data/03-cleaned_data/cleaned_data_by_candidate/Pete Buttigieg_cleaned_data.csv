@@ -1,0 +1,13 @@
+"poll_id","pollscore","numeric_grade","transparency_score","duration","sample_size","population","hypothetical","Methodology","pct"
+87520,2.2,9,8.9,2,982,"lv","true","level3",46
+87513,4.7,4.7,3.3,1,568,"rv","true","level2",43
+87514,4.7,4.7,3.3,1,537,"rv","true","level2",41
+87512,4.7,4.7,3.3,1,596,"rv","true","level2",46
+87515,4.7,4.7,3.3,1,548,"rv","true","level2",47
+87361,1.2,9.7,6.7,1,1370,"rv","true","level2",39.1
+87294,2.8,9.3,10,2,1274,"rv","true","level4",43
+87276,0.9,8.7,10,0,1011,"lv","true","level3",44
+87450,0.6,9.3,7.8,2,1109,"lv","true","level3",35
+82186,4.7,4.7,0,1,1056,"rv","true","level2",46
+78860,9.7,1.7,0,4,1000,"lv","true","level3",39
+77982,4.4,5,0,2,1989,"rv","true","level3",37

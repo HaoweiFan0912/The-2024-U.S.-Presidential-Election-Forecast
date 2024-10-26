@@ -1,0 +1,6 @@
+"poll_id","pollscore","numeric_grade","transparency_score","duration","sample_size","population","hypothetical","Methodology","pct"
+84188,1.2,10,0,4,1097,"rv","true","level3",34
+84269,10,2.3,0,6,1000,"a","true","level4",34
+83343,4.4,7,0,11,804,"a","true","level4",44
+82299,3.4,8.7,0,9,680,"a","true","level4",54
+82299,3.4,8.7,0,9,590,"rv","true","level4",55

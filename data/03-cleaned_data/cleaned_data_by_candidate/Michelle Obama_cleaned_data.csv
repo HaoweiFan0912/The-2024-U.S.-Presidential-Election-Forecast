@@ -1,0 +1,9 @@
+"poll_id","pollscore","numeric_grade","transparency_score","duration","sample_size","population","hypothetical","Methodology","pct"
+87449,0.6,9.3,7.8,3,1098,"lv","true","level3",45
+87297,1.9,9.3,9.4,1,892,"rv","true","level4",50
+87297,1.9,9.3,9.4,1,1070,"a","true","level4",47
+87450,0.6,9.3,7.8,2,1109,"lv","true","level3",44
+86561,5.3,5.3,5.6,4,1000,"lv","true","level2",44
+85918,2.2,9,5.6,5,1637,"rv","true","level1",41.6
+84584,3.4,8,5.6,6,2202,"lv","true","level3",46
+84584,3.4,8,5.6,6,2605,"rv","true","level3",45
