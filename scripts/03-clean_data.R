@@ -99,7 +99,7 @@ clean_data <- function(input_file, output_dir) {
     candidate_data <- president_polls %>%
       filter(candidate_name == candidate) %>%
       select(poll_id, pollscore, numeric_grade, transparency_score, duration,
-             sample_size, population, hypothetical, Methodology) %>%
+             sample_size, population, hypothetical, Methodology, pct) %>%
       tidyr::drop_na()  # Remove rows with any NA values
     
     # Define output file path for each candidate
