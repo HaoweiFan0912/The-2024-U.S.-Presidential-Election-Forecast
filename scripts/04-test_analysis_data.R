@@ -1,69 +1,67 @@
 #### Preamble ####
-# Purpose: Tests... [...UPDATE THIS...]
-# Author: Rohan Alexander [...UPDATE THIS...]
-# Date: 26 September 2024 [...UPDATE THIS...]
-# Contact: rohan.alexander@utoronto.ca [...UPDATE THIS...]
+# Purpose: Tests the structure and contents of the analysis datasets for each candidate
+# Author: Haowei Fan, Fangning Zhang, Shaotong Li
+# Date: 13 October 2024
+# Contact: haowei.fan@mail.utoronto.ca
 # License: MIT
-# Pre-requisites: [...UPDATE THIS...]
-# Any other information needed? [...UPDATE THIS...]
+# Pre-requisites: 02-analysis_data saved and loaded
+# Any other information needed? None
 
-
-#### Workspace setup ####
 library(tidyverse)
 library(testthat)
 
-data <- read_csv("data/02-analysis_data/analysis_data.csv")
+# Set working directory to project root
+setwd("..")  # Move up one level from the 'scripts' folder to the project root
 
+# Define paths for each candidate's data
+candidate_files <- list(
+  "Donald Trump" = "data/02-analysis_data/Donald Trump_cleaned_data.csv",
+  "Kamala Harris" = "data/02-analysis_data/Kamala Harris_cleaned_data.csv",
+  "Joe Biden" = "data/02-analysis_data/Joe Biden_cleaned_data.csv"
+)
 
-#### Test data ####
-# Test that the dataset has 151 rows - there are 151 divisions in Australia
-test_that("dataset has 151 rows", {
-  expect_equal(nrow(analysis_data), 151)
-})
+# Define expected columns
+expected_cols <- c("poll_id", "numeric_grade", "pollscore", "Methodology", 
+                   "transparency_score", "duration", "sample_size", 
+                   "population", "hypothetical", "pct")
 
-# Test that the dataset has 3 columns
-test_that("dataset has 3 columns", {
-  expect_equal(ncol(analysis_data), 3)
-})
+# Function to run tests on a given dataset
+test_candidate_data <- function(file_path, candidate_name) {
+  data <- read_csv(file_path)
+  
+  test_that(paste("dataset for", candidate_name, "has correct number of columns"), {
+    expect_equal(ncol(data), length(expected_cols))
+  })
+  
+  test_that(paste("dataset for", candidate_name, "contains expected columns"), {
+    present_cols <- intersect(expected_cols, colnames(data))
+    missing_cols <- setdiff(expected_cols, present_cols)
+    
+    # Display missing columns if any
+    if (length(missing_cols) > 0) {
+      warning(paste("Missing columns for", candidate_name, ":", paste(missing_cols, collapse = ", ")))
+    }
+    
+    # Test that all expected columns are present
+    expect_setequal(colnames(data), expected_cols)
+  })
+  
+  test_that(paste("column types are as expected for", candidate_name), {
+    # Check types only if column exists
+    if ("Methodology" %in% colnames(data)) expect_type(data$Methodology, "character")
+    if ("population" %in% colnames(data)) expect_type(data$population, "character")
+    if ("hypothetical" %in% colnames(data)) expect_type(data$hypothetical, "logical")
+    if ("poll_id" %in% colnames(data)) expect_type(data$poll_id, "double")
+    if ("numeric_grade" %in% colnames(data)) expect_type(data$numeric_grade, "double")
+    if ("pollscore" %in% colnames(data)) expect_type(data$pollscore, "double")
+    if ("transparency_score" %in% colnames(data)) expect_type(data$transparency_score, "double")
+    if ("duration" %in% colnames(data)) expect_type(data$duration, "double")
+    if ("sample_size" %in% colnames(data)) expect_type(data$sample_size, "double")
+    if ("pct" %in% colnames(data)) expect_type(data$pct, "double")
+  })
+}
 
-# Test that the 'division' column is character type
-test_that("'division' is character", {
-  expect_type(analysis_data$division, "character")
-})
-
-# Test that the 'party' column is character type
-test_that("'party' is character", {
-  expect_type(analysis_data$party, "character")
-})
-
-# Test that the 'state' column is character type
-test_that("'state' is character", {
-  expect_type(analysis_data$state, "character")
-})
-
-# Test that there are no missing values in the dataset
-test_that("no missing values in dataset", {
-  expect_true(all(!is.na(analysis_data)))
-})
-
-# Test that 'division' contains unique values (no duplicates)
-test_that("'division' column contains unique values", {
-  expect_equal(length(unique(analysis_data$division)), 151)
-})
-
-# Test that 'state' contains only valid Australian state or territory names
-valid_states <- c("New South Wales", "Victoria", "Queensland", "South Australia", "Western Australia", 
-                  "Tasmania", "Northern Territory", "Australian Capital Territory")
-test_that("'state' contains valid Australian state names", {
-  expect_true(all(analysis_data$state %in% valid_states))
-})
-
-# Test that there are no empty strings in 'division', 'party', or 'state' columns
-test_that("no empty strings in 'division', 'party', or 'state' columns", {
-  expect_false(any(analysis_data$division == "" | analysis_data$party == "" | analysis_data$state == ""))
-})
-
-# Test that the 'party' column contains at least 2 unique values
-test_that("'party' column contains at least 2 unique values", {
-  expect_true(length(unique(analysis_data$party)) >= 2)
-})
+# Run tests for each candidate
+for (candidate_name in names(candidate_files)) {
+  test_candidate_data(candidate_files[[candidate_name]], candidate_name)
+}
