@@ -9,67 +9,123 @@
 
 
 library(tidyverse)
-library(patchwork) # For combining plots
+library(rstanarm)  # For Bayesian modeling
 
-# Create models directory if it doesn't exist
+# Define paths to each candidate's data
+candidate_data_files <- list(
+  "Donald Trump" = "data/02-analysis_data/Donald Trump_cleaned_data.csv",
+  "Kamala Harris" = "data/02-analysis_data/Kamala Harris_cleaned_data.csv",
+  "Joe Biden" = "data/02-analysis_data/Joe Biden_cleaned_data.csv"
+)
+
+# Ensure a 'models' folder exists for saving model files
 if (!dir.exists("models")) {
   dir.create("models")
 }
 
-# Load data for each candidate
-donald_trump_data <- read_csv("data/02-analysis_data/Donald Trump_cleaned_data.csv") 
-joe_biden_data <- read_csv("data/02-analysis_data/Joe Biden_cleaned_data.csv") 
-kamala_harris_data <- read_csv("data/02-analysis_data/Kamala Harris_cleaned_data.csv") 
+# Representative data for predictions (assuming representative_data_for_prediction is already created)
 
-# Define a function to build, summarize, and save the model for a given dataset
-build_and_save_model <- function(data, candidate_name, file_path) {
-  # Fit the linear model with pct as the dependent variable
-  model <- lm(pct ~ pollscore + numeric_grade + transparency_score + duration 
-              + sample_size + population + hypothetical + Methodology, data = data)
-  message(paste("Model summary for", candidate_name))
-  print(summary(model))
+# Function to create and save a linear model for a candidate
+create_and_save_linear_model <- function(data, candidate_name) {
+  # Fit a linear model
+  linear_model <- lm(
+    pct ~ pollscore + numeric_grade + transparency_score + duration + sample_size + population + hypothetical + Methodology,
+    data = data
+  )
   
-  # Save the model as an .rds file
-  saveRDS(model, file = file_path)
-  message(paste("Model saved to", file_path))
+  # Save the model
+  saveRDS(linear_model, file = paste0("models/", candidate_name, "_linear_model.rds"))
+  message(paste("Linear model saved as", paste0(candidate_name, "_linear_model.rds")))
   
-  return(model)
+  return(linear_model)
 }
 
-# Function to plot actual vs. predicted values and residuals for a given model
-plot_model <- function(model, data, candidate_name) {
-  # Add predictions and residuals to the data
-  data <- data %>%
-    mutate(predicted_pct = predict(model, data),  # Predicted pct
-           residuals = pct - predicted_pct)       # Residuals
+# Function to create and save a Bayesian model for a candidate, excluding constant variables and poll_id
+create_and_save_bayesian_model <- function(data, candidate_name) {
+  # Exclude constant variables and poll_id
+  constant_vars <- names(data)[sapply(data, function(x) length(unique(x)) == 1)]
+  formula <- as.formula(
+    paste("pct ~", paste(setdiff(names(data), c("pct", "poll_id", constant_vars)), collapse = " + "))
+  )
   
-  # Plot 1: Actual vs Predicted values
-  p1 <- ggplot(data, aes(x = predicted_pct, y = pct)) +
-    geom_point(color = "blue", alpha = 0.5) +
-    geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +
-    labs(title = paste("Actual vs Predicted for", candidate_name),
-         x = "Predicted pct", y = "Actual pct") +
-    theme_minimal()
+  # Fit a Bayesian model
+  bayesian_model <- stan_glm(
+    formula,
+    data = data,
+    family = gaussian(),
+    prior = normal(0, 1),
+    chains = 4,
+    iter = 2000,
+    seed = 123
+  )
   
-  # Plot 2: Residuals vs Predicted values
-  p2 <- ggplot(data, aes(x = predicted_pct, y = residuals)) +
-    geom_point(color = "purple", alpha = 0.5) +
-    geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-    labs(title = paste("Residuals vs Predicted for", candidate_name),
-         x = "Predicted pct", y = "Residuals") +
-    theme_minimal()
+  # Save the model
+  saveRDS(bayesian_model, file = paste0("models/", candidate_name, "_Bayesian_model.rds"))
+  message(paste("Bayesian model saved as", paste0(candidate_name, "_Bayesian_model.rds")))
   
-  # Combine and display the plots
-  combined_plot <- p1 / p2
-  print(combined_plot)
+  return(bayesian_model)
 }
 
-# Build, visualize, and save models for each candidate
-trump_model <- build_and_save_model(donald_trump_data, "Donald Trump", "models/Trump_model.rds")
-plot_model(trump_model, donald_trump_data, "Donald Trump")
+# Function to predict using a model and representative values
+predict_with_model <- function(model, representative_data, candidate_name) {
+  prediction_input <- representative_data %>%
+    filter(Candidate == candidate_name) %>%
+    select(-Candidate)
+  
+  predicted_values <- predict(model, newdata = prediction_input)
+  
+  prediction_summary <- tibble(
+    Candidate = candidate_name,
+    Predicted_pct = mean(predicted_values)
+  )
+  
+  return(prediction_summary)
+}
 
-biden_model <- build_and_save_model(joe_biden_data, "Joe Biden", "models/Biden_model.rds")
-plot_model(biden_model, joe_biden_data, "Joe Biden")
+# Function to predict using a Bayesian model with posterior prediction and summarize results
+predict_with_bayesian_model <- function(bayesian_model, representative_data, candidate_name) {
+  prediction_input <- representative_data %>%
+    filter(Candidate == candidate_name) %>%
+    select(-Candidate)
+  
+  predicted_values <- posterior_predict(bayesian_model, newdata = prediction_input)
+  
+  prediction_summary <- tibble(
+    Candidate = candidate_name,
+    Predicted_pct_mean = mean(predicted_values),
+    Predicted_pct_lower = quantile(predicted_values, 0.025),
+    Predicted_pct_upper = quantile(predicted_values, 0.975)
+  )
+  
+  return(prediction_summary)
+}
 
-harris_model <- build_and_save_model(kamala_harris_data, "Kamala Harris", "models/Harris_model.rds")
-plot_model(harris_model, kamala_harris_data, "Kamala Harris")
+# Generate models, save them, and get predictions for each candidate
+linear_predictions <- list()
+bayesian_predictions <- list()
+
+for (candidate_name in names(candidate_data_files)) {
+  candidate_data <- read_csv(candidate_data_files[[candidate_name]])
+  
+  # Create, save, and predict with the linear model
+  linear_model <- create_and_save_linear_model(candidate_data, candidate_name)
+  linear_prediction <- predict_with_model(linear_model, representative_data_for_prediction, candidate_name)
+  linear_predictions[[candidate_name]] <- linear_prediction
+  
+  # Create, save, and predict with the Bayesian model
+  bayesian_model <- create_and_save_bayesian_model(candidate_data, candidate_name)
+  bayesian_prediction <- predict_with_bayesian_model(bayesian_model, representative_data_for_prediction, candidate_name)
+  bayesian_predictions[[candidate_name]] <- bayesian_prediction
+}
+
+# Combine predictions into data frames for printing
+linear_predictions_df <- bind_rows(linear_predictions)
+bayesian_predictions_df <- bind_rows(bayesian_predictions)
+
+# Print linear model predictions
+print("Linear Model Predictions:")
+print(linear_predictions_df)
+
+# Print Bayesian model predictions
+print("Bayesian Model Predictions:")
+print(bayesian_predictions_df)
