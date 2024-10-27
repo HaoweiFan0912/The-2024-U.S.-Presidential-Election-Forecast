@@ -1,5 +1,5 @@
 #### Preamble ####
-# Purpose: Create and explore the analysis data
+# Purpose: Explore the analysis data and find representitive values
 # Author: Haowei Fan, Fangning Zhang, Shaotong Li
 # Date: 13 October 2024
 # Contact: haowei.fan@mail.utoronto.ca
@@ -100,3 +100,40 @@ for (candidate_name in names(candidate_data)) {
   combined_plot <- plot_distributions(data, candidate_name)
   print(combined_plot)
 }
+
+# Define paths for each candidate's data
+candidate_files <- list(
+  "Donald Trump" = "data/02-analysis_data/Donald Trump_cleaned_data.csv",
+  "Kamala Harris" = "data/02-analysis_data/Kamala Harris_cleaned_data.csv",
+  "Joe Biden" = "data/02-analysis_data/Joe Biden_cleaned_data.csv"
+)
+
+# Function to calculate representative values
+calculate_representative_value <- function(data) {
+  data %>%
+    summarise(
+      pollscore_mean = mean(pollscore, na.rm = TRUE),
+      numeric_grade_median = median(numeric_grade, na.rm = TRUE),
+      transparency_score_mean = mean(transparency_score, na.rm = TRUE),
+      duration_mean = mean(duration, na.rm = TRUE),
+      sample_size_mean = mean(sample_size, na.rm = TRUE),
+      population_mode = as.character(names(sort(table(population), decreasing = TRUE)[1])),  # Calculate mode
+      hypothetical_mode = as.logical(names(sort(table(hypothetical), decreasing = TRUE)[1])),  # Calculate mode
+      Methodology_mode = as.character(names(sort(table(Methodology), decreasing = TRUE)[1])),  # Calculate mode
+      pct_mean = mean(pct, na.rm = TRUE)
+    )
+}
+
+# Calculate and display representative values for each candidate
+all_representative_values <- list()
+for (candidate_name in names(candidate_files)) {
+  data <- read_csv(candidate_files[[candidate_name]])
+  representative_values <- calculate_representative_value(data)
+  print(paste("Representative values for", candidate_name, ":"))
+  print(representative_values)
+  all_representative_values[[candidate_name]] <- representative_values
+}
+
+# Combine and display full results as a single data frame
+full_representative_values <- bind_rows(all_representative_values, .id = "Candidate")
+print(full_representative_values, width = Inf)
