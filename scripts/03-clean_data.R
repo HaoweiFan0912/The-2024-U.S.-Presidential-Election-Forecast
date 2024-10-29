@@ -116,3 +116,71 @@ clean_data <- function(input_file, output_dir) {
 input_file <- "data/01-raw_data/raw_data.csv"   
 output_dir <- "data/03-cleaned_data/cleaned_data_by_candidate"  
 cleaned_data <- clean_data(input_file, output_dir)
+
+raw_data <- read_csv("data/01-raw_data/raw_data.csv")
+
+candidate_ranking <- raw_data %>%
+  group_by(candidate_name) %>%
+  summarize(
+    poll_count = n(),                    
+    avg_weighted_pct = mean(poll_count * pct, na.rm = TRUE)  
+  ) %>%
+  arrange(desc(avg_weighted_pct)) %>%    
+  slice_head(n = 3)                       
+
+print("Top three candidates by average of poll count * pct:")
+print(candidate_ranking)
+
+# Define file paths
+source_folder <- "data/03-cleaned_data/cleaned_data_by_candidate/"
+destination_folder <- "data/02-analysis_data/"
+
+# Define filenames
+files_to_move <- c("Donald Trump_cleaned_data.csv", "Kamala Harris_cleaned_data.csv", "Joe Biden_cleaned_data.csv")
+
+# Copy each file from source to destination
+for (file_name in files_to_move) {
+  file_path <- file.path(source_folder, file_name)
+  destination_path <- file.path(destination_folder, file_name)
+  
+  # Copy file
+  file.copy(file_path, destination_path, overwrite = TRUE)
+  message(paste("File saved to:", destination_path))
+}
+
+# Define paths for each candidate's analysis data
+candidate_data_files <- list(
+  "Donald Trump" = "data/02-analysis_data/Donald Trump_cleaned_data.csv",
+  "Kamala Harris" = "data/02-analysis_data/Kamala Harris_cleaned_data.csv",
+  "Joe Biden" = "data/02-analysis_data/Joe Biden_cleaned_data.csv"
+)
+
+# Function to split data into training (70%) and test (30%) sets
+split_data <- function(data, train_ratio = 0.7) {
+  set.seed(123)  # Set seed for reproducibility
+  train_indices <- sample(seq_len(nrow(data)), size = floor(train_ratio * nrow(data)))
+  train_data <- data[train_indices, ]
+  test_data <- data[-train_indices, ]
+  list(train = train_data, test = test_data)
+}
+
+# Process each candidate's data
+for (candidate_name in names(candidate_data_files)) {
+  # Load the data
+  data <- read.csv(candidate_data_files[[candidate_name]])
+  
+  # Split the data
+  split <- split_data(data)
+  
+  # Define paths for saving the split data
+  train_path <- paste0("data/02-analysis_data/", candidate_name, "_train.csv")
+  test_path <- paste0("data/02-analysis_data/", candidate_name, "_test.csv")
+  
+  # Save the training and test datasets
+  write.csv(split$train, train_path, row.names = FALSE)
+  write.csv(split$test, test_path, row.names = FALSE)
+  
+  message(paste("Data for", candidate_name, "split into training and test sets."))
+  message(paste("Training data saved to:", train_path))
+  message(paste("Test data saved to:", test_path))
+}
