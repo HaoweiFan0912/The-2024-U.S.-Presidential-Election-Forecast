@@ -138,66 +138,69 @@ na_tibble_2 <- na_tibble[(ceiling(nrow(na_tibble)/2) + 1):nrow(na_tibble), ]
 kable(na_tibble)
 ```
 重要的numerical variable的分布：
-```{r, fig.pos="H"}
+```{r, fig.pos="H", fig.width=22, fig.height=18}
 #| warning: false
 #| message: false
 #| echo: false
 #| label: fig-numdis
 #| fig-cap: "Distribution of numerical varibales"
-
-### Plot distributions for selected numeric variables ###
+### Define Variables and Prepare Data ###
 # Define the numeric variables to plot
 numeric_variables <- c("pollscore", "numeric_grade", "transparency_score", "sample_size", "pct")
 
+# Convert start_date and end_date to Date type
+raw_data$start_date <- ymd(raw_data$start_date)
+raw_data$end_date <- ymd(raw_data$end_date)
+
+# Define the date variables to plot
+date_variables <- c("start_date", "end_date")
+
+### Create Plots for Numeric Variables ###
 # Create a list to store plots
 plots <- list()
 
 # Loop through selected numeric variables and plot their distributions
 for (variable in numeric_variables) {
-  plot <- ggplot(raw_data, aes_string(x = variable)) +
-    geom_histogram(binwidth = 0.2, fill = "blue", color = "black") +
+  plots[[variable]] <- ggplot(raw_data, aes_string(x = variable)) +
+    geom_histogram(binwidth = 0.8, fill = "#69b3a2", color = "black", alpha = 0.8) +
     labs(title = paste("Distribution of", variable), x = variable, y = "Frequency") +
-    theme_minimal() +
-    theme(plot.title = element_text(hjust = 0.5))
-  
-  # Add plot to list
-  plots[[variable]] <- plot
+    theme_minimal(base_size = 30) +
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 12),
+      axis.title = element_text(size = 10),
+      axis.text = element_text(size = 10)
+    )
 }
 
-### Convert start_date and end_date to Date type and plot ###
-raw_data$start_date <- ymd(raw_data$start_date)
-raw_data$end_date <- ymd(raw_data$end_date)
-
-# Plot start_date and end_date distributions
-date_variables <- c("start_date", "end_date")
-
+### Create Plots for Date Variables ###
+# Loop through selected date variables and plot their distributions
 for (variable in date_variables) {
-  plot <- ggplot(raw_data, aes_string(x = variable)) +
-    geom_histogram(binwidth = 30, fill = "green", color = "black") +
+  plots[[variable]] <- ggplot(raw_data, aes_string(x = variable)) +
+    geom_histogram(binwidth = 30, fill = "#69b3a2", color = "black", alpha = 0.8) +
     labs(title = paste("Distribution of", variable), x = variable, y = "Frequency") +
-    theme_minimal() +
-    theme(plot.title = element_text(hjust = 0.5))
-  
-  # Add plot to list
-  plots[[variable]] <- plot
+    theme_minimal(base_size = 30) +
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 12),
+      axis.title = element_text(size = 10),
+      axis.text = element_text(size = 10)
+    )
 }
 
-
-
-
-
-# Combine all individual plots into one using patchwork
-combined_plot <- wrap_plots(plots) +
-  plot_annotation(title = "Distributions of Selected Numeric Variables")
+### Combine and Print Plots ###
+# Combine all individual plots into one using patchwork with 2 columns and 4 rows
+combined_plot <- wrap_plots(plots, ncol = 3, nrow = 3, heights = unit(rep(3, 4), "in")) +
+  plot_annotation(
+    theme = theme(
+      plot.title = element_text(hjust = 0.5, size = 14)
+    )
+  )
 
 # Print the combined plot
 print(combined_plot)
 
-
-
 ```
 接下来是categorical
-```{r, fig.pos="H"}
+```{r, fig.pos="H", fig.width=22, fig.height=8}
 #| warning: false
 #| message: false
 #| echo: false
@@ -215,7 +218,7 @@ categorical_plots <- list()
 # Loop through categorical variables and plot their distributions
 for (variable in categorical_variables) {
   plot <- ggplot(raw_data, aes_string(x = variable)) +
-    geom_bar(fill = "skyblue", color = "black") +
+    geom_bar(fill = "#69b3a2", color = "black") +
     labs(title = paste(variable), x = variable, y = "Count") +
     theme_minimal() +
     theme(plot.title = element_text(hjust = 0.5))
@@ -237,7 +240,7 @@ raw_data$methodology_grouped <- ifelse(raw_data$methodology %in% top_5_methodolo
 
 # Plot the distribution of the top 5 methodologies plus 'Other'
 methodology_plot <- ggplot(raw_data, aes(x = methodology_grouped)) +
-  geom_bar(fill = "skyblue", color = "black") +
+  geom_bar(fill = "#69b3a2", color = "black") +
   labs(title = "Top 5 Methodologies and Others", x = "Methodology", y = "Count") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
