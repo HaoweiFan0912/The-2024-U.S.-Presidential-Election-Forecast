@@ -1,24 +1,26 @@
 {
-    "id": "62B9CE0B",
+    "id": "E6B45A39",
     "path": "~/Desktop/The-2024-U.S.-Presidential-Election-Forecast/paper/paper.qmd",
     "project_path": "paper/paper.qmd",
     "type": "quarto_markdown",
-    "hash": "1886475596",
+    "hash": "0",
     "contents": "",
     "dirty": false,
-    "created": 1730145901522.0,
+    "created": 1730237960310.0,
     "source_on_save": false,
-    "relative_order": 8,
+    "relative_order": 2,
     "properties": {
         "source_window_id": "",
-        "Source": "Source"
+        "Source": "Source",
+        "cursorPosition": "418,0",
+        "scrollLine": "416"
     },
     "folds": "",
-    "lastKnownWriteTime": 1727882064,
+    "lastKnownWriteTime": 1730237916,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1727882064,
+    "last_content_update": 1730237916,
     "read_only": false,
     "read_only_alternatives": []
 }
