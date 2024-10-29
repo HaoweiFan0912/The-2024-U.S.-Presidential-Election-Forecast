@@ -1,0 +1,26 @@
+{
+    "id": "1F22D272",
+    "path": "~/Desktop/The-2024-U.S.-Presidential-Election-Forecast/scripts/05-exploratory_data_analysis.R",
+    "project_path": "scripts/05-exploratory_data_analysis.R",
+    "type": "r_source",
+    "hash": "311802026",
+    "contents": "",
+    "dirty": true,
+    "created": 1730142883492.0,
+    "source_on_save": false,
+    "relative_order": 6,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "124,1",
+        "scrollLine": "97"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1730142721,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1730142721,
+    "read_only": false,
+    "read_only_alternatives": []
+}

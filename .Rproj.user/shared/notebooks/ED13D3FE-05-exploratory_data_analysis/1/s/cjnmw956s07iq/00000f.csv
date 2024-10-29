@@ -1,0 +1,8 @@
+"0","# Get unique hypothetical"
+"0","unique_hypothetical <- unique(raw_data$hypothetical)"
+"0","print(unique_hypothetical)"
+"1","[1]"
+"1"," FALSE"
+"1","  TRUE"
+"1","
+"

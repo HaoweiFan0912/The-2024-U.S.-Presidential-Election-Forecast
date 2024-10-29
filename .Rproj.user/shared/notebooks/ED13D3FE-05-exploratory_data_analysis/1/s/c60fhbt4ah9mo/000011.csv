@@ -1,0 +1,5 @@
+"0","# Plot histogram of numeric_grade"
+"0","ggplot(raw_data, aes(x = numeric_grade)) +"
+"0","  geom_histogram(binwidth = 0.5, fill = ""blue"", color = ""black"") +"
+"0","  theme_minimal() +"
+"0","  labs(title = ""Histogram of Numeric Grade"", x = ""Numeric Grade"", y = ""Count"")"

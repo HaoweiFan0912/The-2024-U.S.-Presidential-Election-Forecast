@@ -1,0 +1,6 @@
+"0","#### Workspace setup ####"
+"0","library(tidyverse)"
+"0","library(rstanarm)"
+"0","library(patchwork)"
+"0","#### Read data ####"
+"0","raw_data <- read_csv(here::here(""data/01-raw_data/raw_data.csv""))"

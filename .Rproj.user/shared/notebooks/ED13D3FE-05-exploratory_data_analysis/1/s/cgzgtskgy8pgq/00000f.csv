@@ -1,0 +1,8 @@
+"0","# Get unique ranked_choice_reallocated"
+"0","unique_ranked_choice_reallocated <- unique(raw_data$ranked_choice_reallocated)"
+"0","print(unique_ranked_choice_reallocated)"
+"1","[1]"
+"1"," FALSE"
+"1","  TRUE"
+"1","
+"

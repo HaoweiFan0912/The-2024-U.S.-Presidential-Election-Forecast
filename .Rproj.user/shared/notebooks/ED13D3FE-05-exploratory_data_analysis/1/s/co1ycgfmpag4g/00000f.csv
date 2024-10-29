@@ -1,0 +1,7 @@
+"0","# Find the range of pollscore in the original dataset"
+"0","pollscore_range <- range(raw_data$pollscore, na.rm = TRUE)"
+"0","print(paste(""Pollscore range:"", pollscore_range[1], ""to"", pollscore_range[2]))"
+"1","[1]"
+"1"," ""Pollscore range: -1.5 to 1.7"""
+"1","
+"
