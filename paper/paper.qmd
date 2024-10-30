@@ -46,7 +46,7 @@ This paper is organized as follows. The next section outlines the data collectio
 
 ## Overview
 
-This project leverages several R packages, including tidyverse[@tidyverse], rstanarm[@rstanarm], testthat[@testthat], readr[@readr], broom[@broom], ggplot2[@ggplot2], and posterior[@posterior], to clean, analyze, and visualize polling data for the 2024 U.S. presidential election forecast. The raw polling data was sourced from FiveThirtyEight's 2024 presidential election polls[@fivethirtyeight2024], providing a comprehensive foundation for our analysis. Together, these packages facilitate a reproducible approach to data handling, statistical modeling, and result presentation in this study.
+This project leverages several R packages[@citeR], including tidyverse[@tidyverse], rstanarm[@rstanarm], testthat[@testthat], readr[@readr], broom[@broom], ggplot2[@ggplot2], and posterior[@posterior], to clean, analyze, and visualize polling data for the 2024 U.S. presidential election forecast. The raw polling data was sourced from FiveThirtyEight's 2024 presidential election polls[@fivethirtyeight2024], providing a comprehensive foundation for our analysis. Together, these packages facilitate a reproducible approach to data handling, statistical modeling, and result presentation in this study.
 
 ## Raw data
 raw data一共有52个variables，以及15891条样本。
@@ -282,7 +282,11 @@ non_numeric_variables <- setdiff(variables_to_extract, numeric_variables)
 
 ## Measurement
 	
-Some paragraphs about how we go from a phenomena in the world to an entry in the dataset.
+This study uses polling data from FiveThirtyEight to capture public sentiment for the 2024 U.S. presidential election. Each observation in the dataset represents public support levels for key candidates as recorded by national and state-level polling organizations. Given the diversity in polling methodologies, question formats, and sampling techniques, the transformation of real-world opinions into structured data requires a standardized approach to ensure accuracy and comparability across sources.
+
+The raw data underwent a comprehensive cleaning process to improve reliability. Initial filtering was applied to remove polls with missing key variables, such as support percentages, sample sizes, or poll ratings, ensuring that only complete and meaningful entries were retained. Duplicate entries were identified and eliminated to prevent redundancy. Polls with extreme support values or small sample sizes, which could introduce bias, were carefully reviewed and either adjusted or excluded based on consistency criteria.
+
+Further, the data was standardized to unify variable formats and scales. Poll results reported in percentages were converted to decimal values, and state names were formatted consistently. After cleaning, the dataset was divided into training and test sets, with 70% allocated to training the model and 30% reserved for validation. This approach provided a robust dataset that accurately reflects public opinion trends, reducing the impact of inconsistencies across polling sources and supporting a reliable forecast of the 2024 U.S. presidential election.
 
 ## Outcome variables
 
