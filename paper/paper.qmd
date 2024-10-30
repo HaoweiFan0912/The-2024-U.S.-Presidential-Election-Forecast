@@ -1,16 +1,20 @@
 ---
-title: "My title"
-subtitle: "My subtitle if needed"
-author: 
-  - First author
-  - Another author
-thanks: "Code and data are available at: [https://github.com/RohanAlexander/starter_folder](https://github.com/RohanAlexander/starter_folder)."
-date: today
+title: "The 2024 U.S. Presidential Election Forecast"
+subtitle: "Multiple Linear Regression and Bayesian Models Accounting for Poll Quality"
+author: Haowei Fan, Fangning Zhang, Shaotong Li
+thanks: "Code and data are available at: https://github.com/HaoweiFan0912/The-2024-U.S.-Presidential-Election-Forecast"
+date: 13/10/2024
+contact: haowei.fan@mail.utoronto.ca
+licence: MIT
 date-format: long
-abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
+abstract: "This study presents a forecast for the 2024 U.S. presidential election using aggregated poll data to predict support for key candidates. By implementing both linear and Bayesian models, we analyze poll data from diverse sources to assess how factors related to poll quality influence candidate support predictions. Our findings reveal possible outcome of election. Additionally, this paper includes an idealized polling methodology to demonstrate best practices in survey design and sample representation."
 format: pdf
 number-sections: true
 bibliography: references.bib
+toc: true
+toc-title: "Table of Contents"
+toc-depth: 2
+toc-location: left
 ---
 
 ```{r}
@@ -28,26 +32,21 @@ raw_data <- read_csv(here::here("data/01-raw_data/raw_data.csv"))
 
 # Introduction
 
-Overview paragraph
+The U.S. presidential election is a globally significant event, drawing substantial international attention due to its potential impact on economies, international relations, and pressing social issues, including climate change and human rights. As the world anticipates the 2024 U.S. electoral contest, predicting the election’s possible outcomes can provide critical insights for policymakers, businesses, and civil society groups. This study aims to forecast the level of support for leading candidates, specifically Kamala Harris and Donald Trump, using aggregated poll data and statistical modeling.
 
-Estimand paragraph
+To provide a robust prediction, we utilize a “poll-of-polls” approach, combining polling data from multiple organizations at both national and state levels to enhance accuracy and stability in forecasted support. Our analysis applies both a linear regression model and a Bayesian approach, with a focus on the key parameter of each candidate's predicted vote share. By considering variations in pollster methodology and geographic distinctions, we account for the nuances of state-level political landscapes and the potential influence of polling organizations.
 
-Results paragraph
+The results of our models reveal consistent patterns in voter support across both Harris and Trump. The linear model estimates a stable support rate for Donald Trump at approximately 47.8%, with similar results for Harris at 46.7%. The Bayesian model, which incorporates pollster and state-level random effects, yields slightly more conservative support estimates, predicting 47.9% for Trump and 46.0% for Harris. These findings suggest that, while both candidates maintain stable support, Trump holds a slight advantage. The consistency across both models underlines the importance of accounting for variability across polling methodologies and regional voter bases.
 
-Why it matters paragraph
+Beyond the immediate electoral forecast, this study contributes valuable insights for understanding how polling predictions can inform societal and international expectations. Predicting election outcomes allows global stakeholders—such as policymakers, investors, and international organizations—to anticipate and adapt to potential shifts in U.S. policy. For instance, a leadership change could bring alterations in U.S. positions on trade, climate commitments, and foreign policy, influencing global economic stability and strategic alliances. Additionally, our findings underscore the importance of transparency in polling methodologies, as well as the potential for more nuanced and accurate forecasts that consider the heterogeneity in polling sources and voter demographics.
 
-Telegraphing paragraph: The remainder of this paper is structured as follows. @sec-data....
-
-
-
-
-
+This paper is organized as follows. The next section outlines the data collection and filtering processes, detailing the key variables and sources. Following that, we discuss our methodological framework, including the construction of the linear and Bayesian models. In the results section, we present the outcomes of both models, and a discussion explores the broader implications of these findings. Finally, the paper concludes with recommendations for future research and potential applications of these forecasting models in electoral studies.
 
 # Data {#sec-data}
 
 ## Overview
 
-这里写数据来源，用到的R包。。。。。。
+This project leverages several R packages, including tidyverse[@tidyverse], rstanarm[@rstanarm], testthat[@testthat], readr[@readr], broom[@broom], ggplot2[@ggplot2], and posterior[@posterior], to clean, analyze, and visualize polling data for the 2024 U.S. presidential election forecast. The raw polling data was sourced from FiveThirtyEight's 2024 presidential election polls[@fivethirtyeight2024], providing a comprehensive foundation for our analysis. Together, these packages facilitate a reproducible approach to data handling, statistical modeling, and result presentation in this study.
 
 ## Raw data
 raw data一共有52个variables，以及15891条样本。
