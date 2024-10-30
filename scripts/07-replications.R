@@ -26,14 +26,13 @@ source("scripts/01-test_simulated_data.R")
 message("Simulated data testing complete.")
 
 # 5. Test Analysis Data
-setwd("scripts")
-source("04-test_analysis_data.R")
+source("scripts/04-test_analysis_data.R")
 message("Analysis data testing complete.")
 
-# 6. Exploratory Data Analysis
-source("scripts/05-exploratory_data_analysis.R")
-message("Exploratory data analysis complete.")
-
-# 7. Model Data
+# 6. Model Data
 source("scripts/06-model_data.R")
 message("Modeling data complete.")
+
+
+
+

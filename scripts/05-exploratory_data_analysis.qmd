@@ -156,27 +156,10 @@ print(candidate_ranking)
 ```
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
-# Define file paths
-source_folder <- "data/03-cleaned_data/cleaned_data_by_candidate/"
-destination_folder <- "data/02-analysis_data/"
-
-# Define filenames
-files_to_move <- c("Donald Trump_cleaned_data.csv", "Kamala Harris_cleaned_data.csv", "Joe Biden_cleaned_data.csv")
-
-# Copy each file from source to destination
-for (file_name in files_to_move) {
-  file_path <- file.path(source_folder, file_name)
-  destination_path <- file.path(destination_folder, file_name)
-  
-  # Copy file
-  file.copy(file_path, destination_path, overwrite = TRUE)
-  message(paste("File saved to:", destination_path))
-}
-
 # Load data for each candidate
-donald_trump_data <- read_csv(here::here("data/02-analysis_data/Donald Trump_cleaned_data.csv"))
-joe_biden_data <- read_csv(here::here("data/02-analysis_data/Joe Biden_cleaned_data.csv")) 
-kamala_harris_data <- read_csv(here::here("data/02-analysis_data/Kamala Harris_cleaned_data.csv")) 
+donald_trump_data <- read_parquet(here::here("data/02-analysis_data/Donald Trump_cleaned_data.parquet"))
+joe_biden_data <- read_parquet(here::here("data/02-analysis_data/Joe Biden_cleaned_data.parquet")) 
+kamala_harris_data <- read_parquet(here::here("data/02-analysis_data/Kamala Harris_cleaned_data.parquet")) 
 
 # Define and load data for each candidate
 candidate_data <- list(
@@ -235,9 +218,9 @@ for (candidate_name in names(candidate_data)) {
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # Define paths for each candidate's data
 candidate_files <- list(
-  "Donald Trump" = "data/02-analysis_data/Donald Trump_cleaned_data.csv",
-  "Kamala Harris" = "data/02-analysis_data/Kamala Harris_cleaned_data.csv",
-  "Joe Biden" = "data/02-analysis_data/Joe Biden_cleaned_data.csv"
+  "Donald Trump" = "data/02-analysis_data/Donald Trump_cleaned_data.parquet",
+  "Kamala Harris" = "data/02-analysis_data/Kamala Harris_cleaned_data.parquet",
+  "Joe Biden" = "data/02-analysis_data/Joe Biden_cleaned_data.parquet"
 )
 
 # Function to calculate representative values
@@ -259,7 +242,7 @@ calculate_representative_value <- function(data) {
 # Calculate and display representative values for each candidate
 all_representative_values <- list()
 for (candidate_name in names(candidate_files)) {
-  data <- read_csv(here::here(candidate_files[[candidate_name]]))
+  data <- read_parquet(here::here(candidate_files[[candidate_name]]))
   representative_values <- calculate_representative_value(data)
   all_representative_values[[candidate_name]] <- representative_values
 }

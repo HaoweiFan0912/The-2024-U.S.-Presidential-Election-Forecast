@@ -131,28 +131,33 @@ candidate_ranking <- raw_data %>%
 print("Top three candidates by average of poll count * pct:")
 print(candidate_ranking)
 
+# Load necessary library
+library(arrow)
+
 # Define file paths
 source_folder <- "data/03-cleaned_data/cleaned_data_by_candidate/"
 destination_folder <- "data/02-analysis_data/"
 
 # Define filenames
-files_to_move <- c("Donald Trump_cleaned_data.csv", "Kamala Harris_cleaned_data.csv", "Joe Biden_cleaned_data.csv")
+files_to_convert <- c("Donald Trump_cleaned_data.csv", "Kamala Harris_cleaned_data.csv", "Joe Biden_cleaned_data.csv")
 
-# Copy each file from source to destination
-for (file_name in files_to_move) {
-  file_path <- file.path(source_folder, file_name)
-  destination_path <- file.path(destination_folder, file_name)
+# Convert each cleaned data file from CSV to Parquet
+for (file_name in files_to_convert) {
+  csv_path <- file.path(source_folder, file_name)
+  parquet_path <- file.path(destination_folder, sub(".csv$", ".parquet", file_name))  # Change .csv to .parquet
   
-  # Copy file
-  file.copy(file_path, destination_path, overwrite = TRUE)
-  message(paste("File saved to:", destination_path))
+  # Read CSV and save as Parquet
+  data <- read.csv(csv_path)
+  write_parquet(data, parquet_path)
+  
+  message(paste("File converted to Parquet and saved to:", parquet_path))
 }
 
 # Define paths for each candidate's analysis data
 candidate_data_files <- list(
-  "Donald Trump" = "data/02-analysis_data/Donald Trump_cleaned_data.csv",
-  "Kamala Harris" = "data/02-analysis_data/Kamala Harris_cleaned_data.csv",
-  "Joe Biden" = "data/02-analysis_data/Joe Biden_cleaned_data.csv"
+  "Donald Trump" = "data/02-analysis_data/Donald Trump_cleaned_data.parquet",
+  "Kamala Harris" = "data/02-analysis_data/Kamala Harris_cleaned_data.parquet",
+  "Joe Biden" = "data/02-analysis_data/Joe Biden_cleaned_data.parquet"
 )
 
 # Function to split data into training (70%) and test (30%) sets
@@ -166,19 +171,19 @@ split_data <- function(data, train_ratio = 0.7) {
 
 # Process each candidate's data
 for (candidate_name in names(candidate_data_files)) {
-  # Load the data
-  data <- read.csv(candidate_data_files[[candidate_name]])
+  # Load the data from Parquet files
+  data <- read_parquet(candidate_data_files[[candidate_name]])
   
   # Split the data
   split <- split_data(data)
   
-  # Define paths for saving the split data
-  train_path <- paste0("data/02-analysis_data/", candidate_name, "_train.csv")
-  test_path <- paste0("data/02-analysis_data/", candidate_name, "_test.csv")
+  # Define paths for saving the split data in Parquet format
+  train_path <- paste0("data/02-analysis_data/", candidate_name, "_train.parquet")
+  test_path <- paste0("data/02-analysis_data/", candidate_name, "_test.parquet")
   
-  # Save the training and test datasets
-  write.csv(split$train, train_path, row.names = FALSE)
-  write.csv(split$test, test_path, row.names = FALSE)
+  # Save the training and test datasets as Parquet files
+  write_parquet(split$train, train_path)
+  write_parquet(split$test, test_path)
   
   message(paste("Data for", candidate_name, "split into training and test sets."))
   message(paste("Training data saved to:", train_path))
