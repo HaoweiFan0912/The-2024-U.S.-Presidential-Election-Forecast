@@ -1,5 +1,0 @@
-"0","# Plot histogram of sample_size"
-"0","ggplot(raw_data, aes(x = sample_size)) +"
-"0","  geom_histogram(binwidth = 0.5, fill = ""blue"", color = ""black"") +"
-"0","  theme_minimal() +"
-"0","  labs(title = ""Histogram of sample_size"", x = ""sample_size"", y = ""Count"")"

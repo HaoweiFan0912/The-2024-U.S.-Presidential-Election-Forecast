@@ -1,4 +1,0 @@
-"0",""
-"0","### Create a list for non-numeric variables ###"
-"0","non_numeric_variables <- setdiff(variables_to_extract, numeric_variables)"
-"0",""
