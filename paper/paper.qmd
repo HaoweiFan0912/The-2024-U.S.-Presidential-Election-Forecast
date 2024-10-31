@@ -338,44 +338,142 @@ Use sub-sub-headings for each outcome variable and feel free to combine a few in
 
 # Model
 
-The goal of our modelling strategy is twofold. Firstly,...
+The goal of our modeling strategy is to estimate the support percentages for leading candidates in the 2024 U.S. presidential election, with a specific focus on Kamala Harris and Donald Trump. This approach accounts for potential variations in support across time, different pollsters, and geographic regions, ensuring a robust prediction framework that balances accuracy with interpretability. We implement both linear and Bayesian models to capture these patterns and examine the influence of polling quality and state-specific factors on the predicted support levels.
 
-Here we briefly describe the Bayesian analysis model used to investigate... Background details and diagnostics are included in [Appendix -@sec-model-details].
+The linear model employs multiple regression, with candidate support percentage as the dependent variable and key predictors such as pollster rating, sample size, geographic region, and polling methodology. This model provides an interpretable framework, allowing us to assess the direct impact of each factor on candidate support. However, to account for more nuanced, hierarchical patterns within the data, we extend this analysis using a Bayesian framework.
 
-## Model set-up
+The Bayesian model incorporates pollster and state-level random effects, enabling us to model variations across different polling organizations and geographic areas more effectively. By including weakly informative priors, the Bayesian model offers greater flexibility while controlling for overfitting, providing a more comprehensive view of voter support trends. Together, these models create a reliable foundation for forecasting support in the 2024 election, with each approach highlighting distinct aspects of the polling data.
 
-Define $y_i$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.  
+## linear Model set-up
+
+Define $y_i$ as the support percentage (pct) for a candidate in the 2024 U.S. presidential election polls. The linear model includes several predictors: $α_i$ (poll reliability score), $β_i$ (numeric grade indicating poll quality), $γ_i$ (transparency score of poll methodology), $δ_i$ (poll duration), $θ_i$ (sample size), $κ_i$ (type of population surveyed), $λ_i$ (whether the poll is hypothetical), and $μ_i$ (poll methodology type).
+
+The model is specified as follows:
+
+```{=tex}
 
 \begin{align} 
-y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
-\mu_i &= \alpha + \beta_i + \gamma_i\\
-\alpha &\sim \mbox{Normal}(0, 2.5) \\
-\beta &\sim \mbox{Normal}(0, 2.5) \\
-\gamma &\sim \mbox{Normal}(0, 2.5) \\
+y_i | \mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
+\mu_i &= \alpha + \beta_1 \times \phi_i + \beta_2 \times \beta_i + \beta_3 \times \gamma_i + \beta_4 \times \delta_i \\
+      &\quad + \beta_5 \times \theta_i + \beta_6 \times \kappa_i + \beta_7 \times \lambda_i + \beta_8 \times \mu_i \\
+\alpha &\sim \mbox{Normal}(0, 10) \\
+\beta_j &\sim \mbox{Normal}(0, 2.5) \quad \text{for each } j = 1, \dots, 8 \\
 \sigma &\sim \mbox{Exponential}(1)
 \end{align}
 
-We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.
+```
+We run the model in R [@citeR] using the lm() for linear regression, along with tidyverse [@tidyverse] for data manipulation and visualization.
 
+### Model Justification
+
+This linear model aims to estimate candidate support percentages in the 2024 U.S. presidential election by accounting for various poll characteristics and methodological factors. The model includes multiple predictors, represented by $φ_i$, $β_i$, $γ_i$, $δ_i$, $θ_i$, $κ_i$, $λ_i$, and $μ_i$, each of which captures different aspects of the polling data that may impact candidate support.
+
+The variable $φ_i$ represents poll reliability scores, with higher values expected to correlate with more stable support estimates. Similarly, $β_i$ and $γ_i$ denote quality-related factors such as numeric grade and transparency score, which likely influence the reliability of the polls. Poll duration ($δ_i$) and sample size ($θ_i$) add further depth to the model by reflecting the scope and stability of each poll's data. The variables $κ_i$, $λ_i$, and $μ_i$ account for population type, the hypothetical nature of the poll, and poll methodology, respectively, allowing the model to adjust for methodological differences across polling organizations.
+
+By incorporating these predictors with normal priors centered at zero, the model balances complexity with interpretability, providing a nuanced view of the factors influencing candidate support. This approach enables us to evaluate how each factor contributes to variations in support predictions while maintaining flexibility to capture unique patterns within the data. The inclusion of weakly informative priors prevents overfitting and ensures that the model remains generalizable across different polling scenarios.
+
+### Results
+
+Our results are summarized in:
+
+```{r}
+#| label: linear-model
+#| fig-cap: linear model analysis
+#| echo: false
+#| warning: false
+#| message: false
+
+# Load the Trump and Harris linear models
+trump_linear_model <- readRDS(here::here("models", "Donald Trump_linear_model.rds"))
+harris_linear_model <- readRDS(here::here("models", "Kamala Harris_linear_model.rds"))
+
+# Load test data for Trump and Harris from Parquet files
+trump_test <- read_parquet(here::here("data/02-analysis_data", "Donald Trump_test.parquet"))
+harris_test <- read_parquet(here::here("data/02-analysis_data", "Kamala Harris_test.parquet"))
+
+# Convert 'hypothetical' column to logical if it's not already logical
+convert_to_logical <- function(df) {
+  if ("hypothetical" %in% names(df) && !is.logical(df$hypothetical)) {
+    df$hypothetical <- as.logical(df$hypothetical)
+  }
+  return(df)
+}
+
+# Make predictions using the linear models
+trump_test$Predicted_Support <- predict(trump_linear_model, newdata = trump_test)
+harris_test$Predicted_Support <- predict(harris_linear_model, newdata = harris_test)
+
+# Combine predictions into a single dataframe for plotting
+predictions_df <- data.frame(
+  Candidate = c("Donald Trump", "Kamala Harris"),
+  Predicted_Support = c(mean(trump_test$Predicted_Support), mean(harris_test$Predicted_Support))
+)
+
+# Create a pie chart for predicted support
+pie_chart <- ggplot(predictions_df, aes(x = "", y = Predicted_Support, fill = Candidate)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +
+  coord_polar("y", start = 0) +
+  geom_text(aes(label = paste0(round(Predicted_Support, 1), "%")), 
+            position = position_stack(vjust = 0.5), size = 5) +
+  labs(title = "Average Predicted Support for Trump and Harris (Linear Model)") +
+  theme_void() +
+  scale_fill_manual(values = c("Donald Trump" = "skyblue", "Kamala Harris" = "salmon"))
+
+# Print the pie chart
+print(pie_chart)
+
+# Prepare data for scatter plot of actual vs. predicted values
+combined_test_data <- bind_rows(
+  trump_test %>% select(Actual_Support = pct, Predicted_Support) %>% mutate(Candidate = "Donald Trump"),
+  harris_test %>% select(Actual_Support = pct, Predicted_Support) %>% mutate(Candidate = "Kamala Harris")
+)
+
+# Create a scatter plot for actual vs. predicted support
+scatter_plot <- ggplot(combined_test_data, aes(x = Actual_Support, y = Predicted_Support, color = Candidate)) +
+  geom_point(alpha = 0.6) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") + # Reference line
+  labs(title = "Actual vs. Predicted Support (Linear Model)",
+       x = "Actual Support (%)",
+       y = "Predicted Support (%)") +
+  theme_minimal() +
+  scale_color_manual(values = c("Donald Trump" = "skyblue", "Kamala Harris" = "salmon"))
+
+# Print the scatter plot
+print(scatter_plot)
+
+```
+## Bayesian Model set-up
+
+Define $y_i$ as the support percentage (pct) for a candidate in the 2024 U.S. presidential election polls. This Bayesian model incorporates several predictors: $α_i$ (poll reliability score), $β_i$ (numeric grade indicating poll quality), $γ_i$ (transparency score of poll methodology), $δ_i$ (poll duration), $θ_i$ (sample size), $κ_i$ (type of population surveyed), $λ_i$ (whether the poll is hypothetical), and $μ_i$ (poll methodology type).
+
+```{=tex}
+\begin{align} 
+y_i | \mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
+\mu_i &= \alpha + \beta_1 \times \phi_i + \beta_2 \times \beta_i + \beta_3 \times \gamma_i + \beta_4 \times \delta_i \\
+      &\quad + \beta_5 \times \theta_i + \beta_6 \times \kappa_i + \beta_7 \times \lambda_i + \beta_8 \times \mu_i \\
+\alpha &\sim \mbox{Normal}(0, 10) \\
+\beta_j &\sim \mbox{Normal}(0, 2.5) \quad \text{for each } j = 1, \dots, 8 \\
+\sigma &\sim \mbox{Exponential}(1)
+\end{align}
+
+```
+
+We implemented this Bayesian model in R [@citeR] using the rstanarm package [@rstanarm], specifying weakly informative priors for regression coefficients to encapsulate reasonable uncertainty around the model parameters.
 
 ### Model justification
 
-We expect a positive relationship between the size of the wings and time spent aloft. In particular...
+This Bayesian model is designed to estimate candidate support percentages in the 2024 U.S. presidential election by integrating various poll characteristics and methodological factors. The predictors, denoted by $\phi_i$, $\beta_i$, $\gamma_i$, $\delta_i$, $\theta_i$, $\kappa_i$, $\lambda_i$, and $\mu_i$, capture multiple dimensions of polling data that could impact candidate support levels.
 
-We can use maths by including latex between dollar signs, for instance $\theta$.
+The variable $\phi_i$ represents the poll reliability score, where higher scores suggest greater stability in support estimates. The predictors $\beta_i$ and $\gamma_i$ correspond to numeric grade and transparency score, which are both indicative of poll quality, likely contributing to more dependable support assessments. Additionally, poll duration ($\delta_i$) and sample size ($\theta_i$) reflect the 
+scope and breadth of each poll, offering insights into the representativeness and consistency of the data. The variables $\kappa_i$, $\lambda_i$, and $\mu_i$ control for factors such as the population type surveyed, whether the poll is hypothetical, and the methodological specifics, allowing the model to account for differences across polling organizations.
 
+By employing normal priors centered at zero for the regression coefficients, this Bayesian approach balances complexity and interpretability, enabling a nuanced understanding of each predictor’s contribution to candidate support variation. Weakly informative priors on coefficients prevent overfitting, supporting the model's generalizability across diverse polling scenarios while remaining sensitive to unique data patterns. This setup allows us to capture meaningful trends in candidate support and adjust for methodological variability among polls, providing robust insights for election forecasting."
 
-# Results
+### Results
 
-Our results are summarized in @tbl-modelresults.
+Our results are summarized in:
 
-```{r}
-
-```
-
-```{r}
-```
-
+#######代码有问题暂时run不出来
 
 
 
