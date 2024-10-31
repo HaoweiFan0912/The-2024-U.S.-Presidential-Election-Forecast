@@ -12,10 +12,25 @@
 library(tidyverse)
 
 # Define paths to each candidate's analysis data (training and testing data)
-candidate_data_files <- list(
-  "Donald Trump" = "data/02-analysis_data/01-trianing/train_Trump.parquet",
-  "Kamala Harris" = "data/02-analysis_data/01-trianing/train_Harris.parquet",
-  "Ron DeSantis" = "data/02-analysis_data/01-trianing/train_DeSantis.parquet"
-)
 
-########################xiamian
+Trump <- read_parquet("data/02-analysis_data/01-training/train_Trump.parquet")
+Harris <- read_parquet("data/02-analysis_data/01-training/train_Harris.parquet")
+DeSantis <- read_parquet("data/02-analysis_data/01-training/train_DeSantis.parquet")
+
+# Function to create and save a linear model for a candidate
+
+Trump_model <- lm(
+  pct ~ pollscore + numeric_grade + transparency_score + duration + sample_size + population + 
+    ranked_choice_reallocated + hypothetical + methodology, data = Trump)
+Harris_model <- lm(
+  pct ~ pollscore + numeric_grade + transparency_score + duration + sample_size + population + 
+    ranked_choice_reallocated + hypothetical + methodology, data = Harris)
+DeSantis_model <- lm(
+  pct ~ pollscore + numeric_grade + transparency_score + duration + sample_size + population + 
+    ranked_choice_reallocated + hypothetical + methodology, data = DeSantis)
+
+# Save the model
+saveRDS(Trump_model, file = "models/Trump_model.rds")
+saveRDS(Harris_model, file = "models/Harris_model.rds")
+saveRDS(DeSantis_model, file = "models/DeSantis_model.rds")
+
