@@ -21,8 +21,8 @@ set.seed(123)  # Set seed for reproducibility
 raw_data <- read_csv("data/01-raw_data/raw_data.csv")
 
 # Step 1: Remove variables with more than 40% NA values
-threshold <- 0.4 * nrow(raw_data_cleaned)
-raw_data_cleaned <- raw_data_cleaned %>%
+threshold <- 0.4 * nrow(raw_data)
+raw_data_cleaned <- raw_data %>%
   select_if(~sum(is.na(.)) <= threshold)
 
 # Step 2: Remove variables with all identical values
@@ -79,10 +79,13 @@ raw_data_cleaned <- raw_data_cleaned %>%
   mutate(across(where(is.numeric), ~ifelse(is.na(.), round(mean(., na.rm = TRUE), 1), .))) %>%
   mutate(across(where(is.character), ~ifelse(is.na(.), names(which.max(table(.))), .)))
 
-# Step 7: Clean name
+# Step 7: Rename pct
+names(raw_data_cleaned)[names(raw_data_cleaned) == "pct"] <- "score"
+
+# Step 8: Clean name
 raw_data_cleaned <- janitor::clean_names(raw_data_cleaned)
 
-# Step 8: Filter data set by unique answer
+# Step 9: Filter data set by unique answer
 candidates <- unique(raw_data_cleaned$answer)
 for (candidate in candidates) {
   # Filter data for each candidate and remove rows with NA values
@@ -95,7 +98,7 @@ for (candidate in candidates) {
   write_parquet(candidate_data, output_file)
 }
 
-# Step 9: find analysis data
+# Step 10: find analysis data
 # Split the top 3 files into 3:7 ratio and save them
 for (file in c("Trump_cleaned_data.parquet", "Harris_cleaned_data.parquet", "DeSantis_cleaned_data.parquet")) {
   # Read the Parquet file into a data frame
