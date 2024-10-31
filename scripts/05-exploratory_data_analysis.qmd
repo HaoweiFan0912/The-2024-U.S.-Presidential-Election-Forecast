@@ -1,0 +1,321 @@
+#### Preamble ####
+# Purpose: Explore the analysis data and find representitive values
+# Author: Haowei Fan, Fangning Zhang, Shaotong Li
+# Date: 13 October 2024
+# Contact: haowei.fan@mail.utoronto.ca
+# License: MIT
+# Pre-requisites: 02-analysis_data saved and loaded
+# Any other information needed? None
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#### Workspace setup ####
+library(tidyverse)
+library(rstanarm)
+library(patchwork)
+raw_data <- read_csv(here::here("data/01-raw_data/raw_data.csv"))
+```
+
+
+```{r}
+library(lubridate)
+# Step 1: Remove variables (columns) with all NA values
+dataset_cleaned <- raw_data %>%
+  select_if(~!all(is.na(.)))
+
+# Step 2: Remove variables with more than 40% NA values
+threshold <- 0.4 * nrow(dataset_cleaned)
+dataset_cleaned <- dataset_cleaned %>%
+  select_if(~sum(is.na(.)) <= threshold)
+
+# Step 3: Remove variables with all identical values
+raw_data_cleaned <- dataset_cleaned %>%
+  select_if(~is.numeric(.) || n_distinct(.) > 1)
+
+# Step 4: Remove duplicated, unrelated variables
+raw_data_cleaned <- raw_data_cleaned %>%
+  select(-any_of(c("pollster_id", "pollster", "display_name", "pollster_rating_id", "pollster_rating_name", 
+                   "question_id", "population_full", "created_at", "url", "url_article", "race_id", 
+                   "candidate_id", "candidate_name", "party", "seat_number")))
+
+# Step 5: Create a new variable called 'duration' (days difference between start_date and end_date) and remove 'start_date' and 'end_date'
+raw_data_cleaned$duration <- as.numeric(mdy(raw_data_cleaned$end_date)-mdy(raw_data_cleaned$start_date))
+raw_data_cleaned <- raw_data_cleaned %>%
+  select(-start_date, -end_date)
+
+<<<<<<< HEAD
+# Step 6: Group methodology by level
+raw_data_cleaned$methodology <- case_when(
+    raw_data_cleaned$methodology %in% c(
+      "Live Phone", "Live Phone/Online Panel", "Live Phone/Probability Panel", 
+      "Online Panel/Probability Panel", "Probability Panel"
+    ) ~ "level4",
+=======
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Get unique pollster IDs
+unique_pollster_ids <- unique(raw_data$pollster_id)
+print(unique_pollster_ids)
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Get unique question IDs
+unique_question_ids <- unique(raw_data$question_id)
+print(unique_question_ids)
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Get unique methodologys
+unique_methodologys <- unique(raw_data$methodology)
+print(unique_methodologys)
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Get unique population
+unique_population <- unique(raw_data$population)
+print(unique_population)
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Get unique race_id
+unique_race_id <- unique(raw_data$race_id)
+print(unique_race_id)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Get unique ranked_choice_reallocated
+unique_ranked_choice_reallocated <- unique(raw_data$ranked_choice_reallocated)
+print(unique_ranked_choice_reallocated)
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Get unique hypothetical
+unique_hypothetical <- unique(raw_data$hypothetical)
+print(unique_hypothetical)
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Get unique party
+unique_party <- unique(raw_data$party)
+print(unique_party)
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Get the maximum and minimum values of numeric_grade
+max_numeric_grade <- max(raw_data$numeric_grade, na.rm = TRUE)
+min_numeric_grade <- min(raw_data$numeric_grade, na.rm = TRUE)
+print(paste("Maximum numeric grade:", max_numeric_grade))
+print(paste("Minimum numeric grade:", min_numeric_grade))
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Find the earliest start date and the latest end date
+earliest_start_date <- min(raw_data$start_date, na.rm = TRUE)
+latest_end_date <- max(raw_data$end_date, na.rm = TRUE)
+print(paste("Earliest start date:", earliest_start_date))
+print(paste("Latest end date:", latest_end_date))
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Calculate the ratio of FALSE to TRUE in the hypothetical column
+hypothetical_ratio <- table(raw_data$hypothetical)
+print(hypothetical_ratio)
+false_to_true_ratio <- hypothetical_ratio["FALSE"] / hypothetical_ratio["TRUE"]
+print(paste("False to True Ratio:", false_to_true_ratio))
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Find the range of pollscore in the original dataset
+pollscore_range <- range(raw_data$pollscore, na.rm = TRUE)
+print(paste("Pollscore range:", pollscore_range[1], "to", pollscore_range[2]))
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Plot histogram of numeric_grade
+ggplot(raw_data, aes(x = numeric_grade)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "black") +
+  theme_minimal() +
+  labs(title = "Histogram of Numeric Grade", x = "Numeric Grade", y = "Count")
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Plot histogram of pollscore
+ggplot(raw_data, aes(x = pollscore)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "black") +
+  theme_minimal() +
+  labs(title = "Histogram of pollscore", x = "pollscore", y = "Count")
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Plot histogram of transparency_score
+ggplot(raw_data, aes(x = transparency_score)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "black") +
+  theme_minimal() +
+  labs(title = "Histogram of transparency_score", x = "transparency_score", y = "Count")
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Plot histogram of sample_size
+ggplot(raw_data, aes(x = sample_size)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "black") +
+  theme_minimal() +
+  labs(title = "Histogram of sample_size", x = "sample_size", y = "Count")
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Find the top 3 candidates.
+candidate_ranking <- raw_data %>%
+  group_by(candidate_name) %>%
+  summarize(
+    poll_count = n(),                    
+    avg_weighted_pct = mean(poll_count * pct, na.rm = TRUE)  
+  ) %>%
+  arrange(desc(avg_weighted_pct)) %>%    
+  slice_head(n = 3)                       
+print(candidate_ranking)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Load data for each candidate
+donald_trump_data <- read_parquet(here::here("data/02-analysis_data/Donald Trump_cleaned_data.parquet"))
+joe_biden_data <- read_parquet(here::here("data/02-analysis_data/Joe Biden_cleaned_data.parquet")) 
+kamala_harris_data <- read_parquet(here::here("data/02-analysis_data/Kamala Harris_cleaned_data.parquet")) 
+
+# Define and load data for each candidate
+candidate_data <- list(
+  "Donald Trump" = donald_trump_data %>% select(-poll_id, -pct),
+  "Kamala Harris" = joe_biden_data %>% select(-poll_id, -pct),
+  "Joe Biden" = kamala_harris_data %>% select(-poll_id, -pct)
+)
+
+# Function to create distribution plots for each variable in a dataset
+plot_distributions <- function(data, candidate_name) {
+  plots <- list()
+  
+  for (var in names(data)) {
+    if (is.numeric(data[[var]])) {
+      # Histogram for numeric variables
+      plot <- ggplot(data, aes(x = .data[[var]])) +
+        geom_histogram(bins = 30, color = "black", fill = "skyblue") +
+        labs(title = paste("Distribution of", var, "for", candidate_name), x = var, y = "Frequency") +
+        theme_minimal()
+      
+    } else if (is.character(data[[var]]) || is.factor(data[[var]])) {
+      # Bar plot for categorical variables
+      plot <- ggplot(data, aes(x = .data[[var]])) +
+        geom_bar(color = "black", fill = "skyblue") +
+        labs(title = paste("Distribution of", var, "for", candidate_name), x = var, y = "Count") +
+        theme_minimal()
+      
+    } else if (is.logical(data[[var]])) {
+      # Bar plot for logical variables (TRUE/FALSE)
+      plot <- ggplot(data, aes(x = factor(.data[[var]], levels = c(TRUE, FALSE)))) +
+        geom_bar(color = "black", fill = "skyblue") +
+        labs(title = paste("Distribution of", var, "for", candidate_name), x = var, y = "Count") +
+        theme_minimal()
+    }
+>>>>>>> 15d932b68ef20c88ef288ebba19468b185b47d9c
+    
+    raw_data_cleaned$methodology %in% c(
+      "IVR/Live Phone/Online Panel", "IVR/Live Phone/Online Panel/Text-to-Web", 
+      "IVR/Live Phone/Text", "IVR/Live Phone/Text-to-Web", "Live Phone/Online Panel/App Panel", 
+      "Live Phone/Online Panel/Text", "Live Phone/Online Panel/Text-to-Web", 
+      "Live Phone/Online Panel/Text-to-Web/Text", "Live Phone/Text", 
+      "Live Phone/Text/Online Panel", "Live Phone/Text-to-Web", 
+      "Live Phone/Text-to-Web/App Panel", "Online Panel", "Online Panel/Text", 
+      "Online Panel/Text-to-Web", "Online Panel/Text-to-Web/Text", "Text", "Text-to-Web"
+    ) ~ "level3",
+    
+    raw_data_cleaned$methodology %in% c(
+      "App Panel", "IVR", "IVR/Live Phone/Text/Online Panel/Email", "IVR/Online Panel", 
+      "IVR/Online Panel/Email", "IVR/Online Panel/Text-to-Web", 
+      "IVR/Online Panel/Text-to-Web/Email", "IVR/Text", "IVR/Text-to-Web", 
+      "IVR/Text-to-Web/Email", "Live Phone/Email", "Live Phone/Online Panel/Mail-to-Web", 
+      "Live Phone/Text/Online Ad", "Live Phone/Text-to-Web/Email", 
+      "Live Phone/Text-to-Web/Email/Mail-to-Web", "Live Phone/Text-to-Web/Online Ad", 
+      "Online Panel/Email", "Online Panel/Email/Text-to-Web", 
+      "Online Panel/Online Ad", "Text-to-Web/Email", "Text-to-Web/Online Ad"
+    ) ~ "level2",
+    
+    raw_data_cleaned$methodology %in% c(
+      "Email", "Email/Online Ad", 
+      "Live Phone/Text-to-Web/Email/Mail-to-Web/Mail-to-Phone", 
+      "Mail-to-Web/Mail-to-Phone", "Online Ad"
+    ) ~ "level1",
+  )
+
+# Step 7: Replace NA values - numerical variables with mean, categorical variables with mode
+raw_data_cleaned <- raw_data_cleaned %>%
+  mutate(across(where(is.numeric), ~ifelse(is.na(.), round(mean(., na.rm = TRUE), 1), .))) %>%
+  mutate(across(where(is.character), ~ifelse(is.na(.), names(which.max(table(.))), .)))
+
+
+
+
+# Step 7: Check for remaining missing values
+na_summary <- sapply(raw_data_cleaned, function(x) sum(is.na(x)))
+print(na_summary)
+```
+```{r}
+library(arrow)
+library(dplyr)
+
+library(arrow)
+library(dplyr)
+
+# Define the directory containing the Parquet files
+directory <- "data/03-cleaned_data"
+
+# Get a list of all Parquet files in the directory
+parquet_files <- list.files(here::here(directory), pattern = "*.parquet", full.names = TRUE)
+
+# Initialize a data frame to store the total value (sample size * pct) for each file
+file_total_value <- data.frame(File = character(), Total_Value = numeric(), stringsAsFactors = FALSE)
+
+# Iterate through all Parquet files in the directory
+for (file in parquet_files) {
+  # Read the Parquet file into a data frame
+  df <- read_parquet(file)
+  
+  # Calculate the total value (sample size * pct) if the columns exist
+  if ("pct" %in% colnames(df) && "sample_size" %in% colnames(df)) {
+    total_value <- sum(df$sample_size * df$pct, na.rm = TRUE)
+    file_total_value <- rbind(file_total_value, data.frame(File = basename(file), Total_Value = total_value))
+  }
+}
+
+# Find the top 3 files by total value
+top_4_files <- file_total_value %>%
+  arrange(desc(Total_Value)) %>%
+  head(4)
+
+# Print the results
+print(top_4_files)
+
+```
+<<<<<<< HEAD
+=======
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Define paths for each candidate's data
+candidate_files <- list(
+  "Donald Trump" = "data/02-analysis_data/Donald Trump_cleaned_data.parquet",
+  "Kamala Harris" = "data/02-analysis_data/Kamala Harris_cleaned_data.parquet",
+  "Joe Biden" = "data/02-analysis_data/Joe Biden_cleaned_data.parquet"
+)
+
+# Function to calculate representative values
+calculate_representative_value <- function(data) {
+  data %>%
+    summarise(
+      pollscore_mean = mean(pollscore, na.rm = TRUE),
+      numeric_grade_median = median(numeric_grade, na.rm = TRUE),
+      transparency_score_mean = mean(transparency_score, na.rm = TRUE),
+      duration_mean = mean(duration, na.rm = TRUE),
+      sample_size_mean = mean(sample_size, na.rm = TRUE),
+      population_mode = as.character(names(sort(table(population), decreasing = TRUE)[1])),  # Calculate mode
+      hypothetical_mode = as.logical(names(sort(table(hypothetical), decreasing = TRUE)[1])),  # Calculate mode
+      Methodology_mode = as.character(names(sort(table(Methodology), decreasing = TRUE)[1])),  # Calculate mode
+      pct_mean = mean(pct, na.rm = TRUE)
+    )
+}
+
+# Calculate and display representative values for each candidate
+all_representative_values <- list()
+for (candidate_name in names(candidate_files)) {
+  data <- read_parquet(here::here(candidate_files[[candidate_name]]))
+  representative_values <- calculate_representative_value(data)
+  all_representative_values[[candidate_name]] <- representative_values
+}
+
+# Combine and display full results as a single data frame
+full_representative_values <- bind_rows(all_representative_values, .id = "Candidate")
+print(full_representative_values, width = Inf)
+```
+>>>>>>> 15d932b68ef20c88ef288ebba19468b185b47d9c
+
+
+
