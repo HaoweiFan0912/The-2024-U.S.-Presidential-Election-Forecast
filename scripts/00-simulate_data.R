@@ -10,16 +10,13 @@
 #### Setup ####
 # Load required libraries
 library(tidyverse)
-
+library(arrow)
 # Set a random seed for reproducibility
 set.seed(123)
   
 ## Generate simulated data for candidate_1
 simulated_candidate_1 <- tibble(
   poll_id = 1:500, 
-  # Generate numeric_grade based on a normal distribution with mean 2 and standard deviation 1.2,
-  # then ensure the values are within the range [0, 3] and round to two decimal places, then map to a range of 0 to 10
-  numeric_grade = round((pmin(pmax(rnorm(500, mean = 2, sd = 1.2), 0), 3) / 3) * 10, 2),
   # Generate pollscore based on a normal distribution with mean -0.5 and standard deviation 0.3,
   # then ensure the values are within the range [-1, 1] and round to one decimal place, then map to a range of 0 to 10
   pollscore = round((pmin(pmax(rnorm(500, mean = -0.5, sd = 0.3), -1), 1) + 1) * 5, 1),
@@ -46,7 +43,6 @@ simulated_candidate_1 <- tibble(
 simulated_candidate_1$score = 
   round(
   # Assume that numeric_grade, pollscore, and transparency_score are equally important, and their ranges are all from 0 to 10.
-  simulated_candidate_1$numeric_grade + 
   (10 - simulated_candidate_1$pollscore) + # Because pollscore is the less the better
   simulated_candidate_1$transparency_score + 
   # When sample size > 800, the score + 10. When 300 <= sample size <= 800, the score +7. Other wise score +3

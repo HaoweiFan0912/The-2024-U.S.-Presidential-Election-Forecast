@@ -15,8 +15,6 @@ library(tidyr)   # For drop_na
 library(lubridate)
 library(arrow)
 
-
-
 set.seed(123)  # Set seed for reproducibility
 raw_data <- read_csv("data/01-raw_data/raw_data.csv")
 
@@ -31,14 +29,14 @@ raw_data_cleaned <- raw_data_cleaned %>%
 
 # Step 3: Remove duplicated, unrelated variables
 raw_data_cleaned <- raw_data_cleaned %>%
-  select(-any_of(c("pollster_id", "pollster", "display_name", "pollster_rating_id", "pollster_rating_name", 
-                   "question_id", "population_full", "created_at", "url", "url_article", "race_id", 
-                   "candidate_id", "candidate_name", "party", "seat_number", "cycle")))
-
+  dplyr::select(-any_of(c("pollster_id", "pollster", "display_name", "pollster_rating_id", "pollster_rating_name", 
+                          "question_id", "population_full", "created_at", "url", "url_article", "race_id", 
+                          "candidate_id", "candidate_name", "party", "seat_number", "cycle"))) 
+  
 # Step 4: Create a new variable called 'duration' (days difference between start_date and end_date) and remove 'start_date' and 'end_date'
 raw_data_cleaned$duration <- as.numeric(mdy(raw_data_cleaned$end_date)-mdy(raw_data_cleaned$start_date))
 raw_data_cleaned <- raw_data_cleaned %>%
-  select(-start_date, -end_date)
+  dplyr::select(-start_date, -end_date)
 
 # Step 5: Group methodology by level
 raw_data_cleaned$methodology <- case_when(
@@ -91,7 +89,8 @@ for (candidate in candidates) {
   # Filter data for each candidate and remove rows with NA values
   candidate_data <- raw_data_cleaned %>%
     filter(answer == candidate) %>% 
-    select(-answer)
+    dplyr::select(-answer)%>% 
+    dplyr::select(-poll_id)
   # Define output file path for each candidate
   output_file <- file.path("data/03-cleaned_data", paste0(candidate, "_cleaned_data.parquet"))
   # Save each candidate's cleaned data to a separate Parquet file

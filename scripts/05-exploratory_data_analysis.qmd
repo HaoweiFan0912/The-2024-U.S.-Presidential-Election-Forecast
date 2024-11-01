@@ -16,60 +16,32 @@ raw_data <- read_csv(here::here("data/01-raw_data/raw_data.csv"))
 ```
 
 
-```{r}
-library(lubridate)
-# Step 1: Remove variables (columns) with all NA values
-dataset_cleaned <- raw_data %>%
-  select_if(~!all(is.na(.)))
 
-# Step 2: Remove variables with more than 40% NA values
-threshold <- 0.4 * nrow(dataset_cleaned)
-dataset_cleaned <- dataset_cleaned %>%
-  select_if(~sum(is.na(.)) <= threshold)
 
-# Step 3: Remove variables with all identical values
-raw_data_cleaned <- dataset_cleaned %>%
-  select_if(~is.numeric(.) || n_distinct(.) > 1)
-
-# Step 4: Remove duplicated, unrelated variables
-raw_data_cleaned <- raw_data_cleaned %>%
-  select(-any_of(c("pollster_id", "pollster", "display_name", "pollster_rating_id", "pollster_rating_name", 
-                   "question_id", "population_full", "created_at", "url", "url_article", "race_id", 
-                   "candidate_id", "candidate_name", "party", "seat_number")))
-
-# Step 5: Create a new variable called 'duration' (days difference between start_date and end_date) and remove 'start_date' and 'end_date'
-raw_data_cleaned$duration <- as.numeric(mdy(raw_data_cleaned$end_date)-mdy(raw_data_cleaned$start_date))
-raw_data_cleaned <- raw_data_cleaned %>%
-  select(-start_date, -end_date)
-
-<<<<<<< HEAD
-# Step 6: Group methodology by level
-raw_data_cleaned$methodology <- case_when(
-    raw_data_cleaned$methodology %in% c(
-      "Live Phone", "Live Phone/Online Panel", "Live Phone/Probability Panel", 
-      "Online Panel/Probability Panel", "Probability Panel"
-    ) ~ "level4",
-=======
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # Get unique pollster IDs
 unique_pollster_ids <- unique(raw_data$pollster_id)
 print(unique_pollster_ids)
 ```
+
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # Get unique question IDs
 unique_question_ids <- unique(raw_data$question_id)
 print(unique_question_ids)
 ```
+
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # Get unique methodologys
 unique_methodologys <- unique(raw_data$methodology)
 print(unique_methodologys)
 ```
+
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # Get unique population
 unique_population <- unique(raw_data$population)
 print(unique_population)
 ```
+
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # Get unique race_id
 unique_race_id <- unique(raw_data$race_id)

@@ -20,13 +20,13 @@ DeSantis <- read_parquet("data/02-analysis_data/01-training/train_DeSantis.parqu
 # Function to create and save a linear model for a candidate
 
 Trump_model <- lm(
-  pct ~ pollscore + numeric_grade + transparency_score + duration + sample_size + population + 
+  score ~ pollscore + transparency_score + duration + sample_size + population + 
     ranked_choice_reallocated + hypothetical + methodology, data = Trump)
 Harris_model <- lm(
-  pct ~ pollscore + numeric_grade + transparency_score + duration + sample_size + population + 
+  score ~ pollscore + transparency_score + duration + sample_size + population + 
     ranked_choice_reallocated + hypothetical + methodology, data = Harris)
 DeSantis_model <- lm(
-  pct ~ pollscore + numeric_grade + transparency_score + duration + sample_size + population + 
+  score ~ pollscore + transparency_score + duration + sample_size + population + 
     ranked_choice_reallocated + hypothetical + methodology, data = DeSantis)
 
 # Save the model

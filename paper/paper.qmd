@@ -12,3 +12,79 @@ format: pdf
 number-sections: true
 bibliography: references.bib
 ---
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+#| echo: false
+#### Workspace setup ####
+library(tidyverse)
+library(knitr)
+library(dplyr)
+library(arrow)
+set.seed(912)
+#### Read data ####
+train_DeeSantis <- read_parquet(here::here("data/02-analysis_data/01-training/train_DeSantis.parquet"))
+train_Trump <- read_parquet(here::here("data/02-analysis_data/01-training/train_Trump.parquet"))
+train_Harris <- read_parquet(here::here("data/02-analysis_data/01-training/train_Harris.parquet"))
+Trump_model <- readRDS(here::here("models/Trump_model.rds"))
+
+```
+
+# Introduction
+
+
+# Data {#sec-data}
+
+## Overview
+
+## Raw data
+	
+## Cleaned data
+
+## Measurement
+
+## Similar dataset
+
+# Model
+
+## Model set-up
+```{r}
+names(train_Trump)
+```
+
+```{r, fig.width=10, fig.height=10}
+data2 = train_Trump %>% select("numeric_grade","pollscore","transparency_score","sample_size","duration")
+pairs( data2 , main = "Predictor vs predictor")
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(Trump_model,1)
+plot(Trump_model,2)
+plot(Trump_model,3)
+plot(Trump_model,4)
+```
+
+
+
+
+
+
+```{r}
+column_names <- c("transparency_score", "ranked_choice_reallocated","methodology","hypothetical", "population")
+variables_string <- paste(column_names, collapse = " + ")
+formula_string <- paste("score ~", variables_string)
+formula <- as.formula(formula_string)
+m2 <- lm(formula, data = train_Trump)
+summary(m2)
+```
+
+
+
+## Predictor variables
+
+
+
+
+
