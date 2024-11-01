@@ -14,6 +14,8 @@ library(rstanarm)
 library(patchwork)
 library(moments)
 raw_data <- read_csv(here::here("data/01-raw_data/raw_data.csv"))
+Trump_test <- read_csv(here::here("data/02-analysis_data/02-Testing/test_Trump.parquet"))
+Harris_test <- read_csv(here::here("data/02-analysis_data/02-Testing/test_Harris.parquet"))
 ```
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # Get unique pollster IDs
@@ -118,7 +120,7 @@ candidate_ranking <- raw_data %>%
     avg_weighted_pct = mean(poll_count * pct, na.rm = TRUE)  
   ) %>%
   arrange(desc(avg_weighted_pct)) %>%    
-  slice_head(n = 3)                       
+  slice_head(n = 5)                       
 print(candidate_ranking)
 ```
 

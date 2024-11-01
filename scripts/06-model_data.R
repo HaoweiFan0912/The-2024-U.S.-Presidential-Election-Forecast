@@ -19,11 +19,9 @@ Harris <- read_parquet("data/02-analysis_data/01-training/train_Harris.parquet")
 # Function to create and save a linear model for a candidate
 
 Trump_model <- lm(
-  score ~ pollscore + transparency_score + duration + sample_size + population + 
-    ranked_choice_reallocated + hypothetical + methodology, data = Trump)
+  score ~ pollscore + transparency_score + duration + sample_size + population + hypothetical , data = Trump)
 Harris_model <- lm(
-  score ~ pollscore + transparency_score + duration + sample_size + population + 
-    ranked_choice_reallocated + hypothetical + methodology, data = Harris)
+  score ~ pollscore + transparency_score + duration + sample_size + population + hypothetical , data = Harris)
 
 # Save the model
 saveRDS(Trump_model, file = "models/Trump_model.rds")

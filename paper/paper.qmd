@@ -22,6 +22,10 @@ library(tidyverse)
 library(knitr)
 library(dplyr)
 library(arrow)
+library(patchwork)
+library(car)
+library(kableExtra)
+library(gridExtra)
 set.seed(912)
 #### Read data ####
 raw_data <- read_csv(here::here("data/01-raw_data/raw_data.csv"))
@@ -38,13 +42,7 @@ Harris_model <- readRDS(here::here("models/Harris_model.rds"))
 ## Overview
 
 ## Raw data
-```{r}
-# Identify variables (columns) that are completely empty (all NA values)
-empty_variables <- names(raw_data)[sapply(raw_data, function(x) all(is.na(x)))]
 
-# Print the names of empty variables
-print(empty_variables)
-```
 
 ```{r}
 names(raw_data)
@@ -55,7 +53,7 @@ Raw data 一共包含了52个variable以及17133个sample。52个varibles中以�
 # 这里需要画一个table，展示无关变量
 del_1 <- c("notes", "url", "url_article", "url_topline", "url_crosstab", "source")
 droped_data <- raw_data %>% select(-any_of(del_1))
-names(droped_data)
+del_1
 ```
 此外，还有一些相同的variables，我们保留其一，剩下的也不做讨论，它们包括：
 ```{r}
@@ -63,14 +61,14 @@ names(droped_data)
 del_2 <- c("pollster", "sponsors", "display_name", "pollster_rating_name", "sponsor_candidate", "endorsed_candidate_name",
            "population_full", "candidate_id", "candidate_name")
 droped_data <- droped_data %>% select(-any_of(del_2))
-names(droped_data)
+del_2
 ```
 此外，在已知我们分析的是美国总统竞选的前提下，我们删除以下variables：
 ```{r}
 # 这里需要画一个table，展示以知变量
 del_3 <- c("office_type", "seat_number", "seat_name")
 droped_data <- droped_data %>% select(-any_of(del_3))
-names(droped_data)
+del_3
 ```
 常数变量我们也不做讨论，因为无法影响我们的预测，它们是：
 ```{r}
@@ -80,61 +78,401 @@ same_value_variables <- names(droped_data)[sapply(droped_data, function(x) lengt
 same_value_data <- data.frame(Variable = same_value_variables, Value = sapply(same_value_variables, function(var)
 unique(na.omit(droped_data[[var]]))[1]))
 # Print the names of variables with all identical values using kable
-kable(same_value_data, col.names = c("Variable", "Value"))
-```
-```{r}
+kable(same_value_data[, 2, drop = FALSE], col.names = c("Variable", "Value"))
 del_4 <- c("endorsed_candidate_id", "endorsed_candidate_party", "subpopulation", "cycle", "election_date", "stage", "nationwide_batch")
 droped_data <- droped_data %>% select(-any_of(del_4))
-names(droped_data)
 ```
+
 其中categorical的有
 ```{r}
-catego <- c("poll_id", "pollster_id", "sponsor_ids", "pollster_rating_id", "methodology", "state", "start_date", "end_date",
+catego <- c("poll_id", "pollster_id", "sponsor_ids", "pollster_rating_id", "methodology", "state",
          "sponsor_candidate_id", "sponsor_candidate_party", "question_id", "population", "tracking", "created_at", "internal",
          "partisan","race_id", "ranked_choice_reallocated", "ranked_choice_round", "hypothetical","party","answer")
+catego
 ```
 重要的categorical为下面的，剩下的将在appendix阐述
 ```{r}
-catego_inp <- c("poll_id", "methodology", )
+catego_inp <- c("poll_id", "methodology", "population", "ranked_choice_reallocated", "hypothetical","answer")
+catego_inp
 ```
+一共有3530个poll
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Get unique Poll IDs and print the count
+unique_poll_ids <- unique(raw_data$poll_id)
+print(length(unique_poll_ids))
+```
+描述
+```{r}
+plots <- list()
+# Create bar charts for 'ranked_choice_reallocated' and 'hypothetical'
+plots[["ranked_choice"]] <- ggplot(raw_data, aes(x = ranked_choice_reallocated)) +
+  geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
+  labs(title = "Bar Chart of Ranked Choice Reallocated", x = "Ranked Choice Reallocated", y = "Count") +
+  theme_minimal(base_size = 15) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 12),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 10)
+  )
 
+plots[["hypothetical"]] <- ggplot(raw_data, aes(x = hypothetical)) +
+  geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
+  labs(title = "Bar Chart of Hypothetical", x = "Hypothetical", y = "Count") +
+  theme_minimal(base_size = 15) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 12),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 10)
+  )
 
+# Combine and print the plots using patchwork
+combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(3, 4), "in")) +
+  plot_annotation(
+    theme = theme(
+      plot.title = element_text(hjust = 0.5, size = 14)
+    )
+  )
+# Print the combined plot
+print(combined_plot)
 
-
+```
+描述
+```{r, fig.pos="H", fig.width=18, fig.height=18}
+plots <- list()
+# Find the top 3 most frequent values in 'methodology' and group others as 'Other'
+methodology_counts <- sort(table(raw_data$methodology), decreasing = TRUE)
+top_3_methodologies <- names(methodology_counts)[1:3]
+raw_data$methodology_grouped <- ifelse(raw_data$methodology %in% top_3_methodologies, raw_data$methodology, "Other")
+# Create a bar chart for the grouped 'methodology'
+plots[["methodology"]] <- ggplot(raw_data, aes(x = methodology_grouped)) +
+  geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
+  labs(title = "Top 3 Methodologies and Others", x = "Methodology", y = "Count") +
+  theme_minimal(base_size = 15) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 12),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 10)
+  )
+plots[["population"]] <- ggplot(raw_data, aes(x = population)) +
+  geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
+  labs(title = "Population", x = "Population", y = "Count") +
+  theme_minimal(base_size = 15) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 12),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 10)
+  )
+# Find the top 3 most frequent values in 'answer' and group others as 'Other'
+answer_counts <- sort(table(raw_data$answer), decreasing = TRUE)
+top_3_answer <- names(answer_counts)[1:3]
+raw_data$answer <- ifelse(raw_data$answer %in% top_3_answer, raw_data$answer, "Other")
+# Create a bar chart for the grouped 'answer'
+plots[["answer"]] <- ggplot(raw_data, aes(x = answer)) +
+  geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
+  labs(title = "Top 3 answer and Others", x = "answer", y = "Count") +
+  theme_minimal(base_size = 15) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 12),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 10)
+  )
+combined_plot <- wrap_plots(plots, ncol = 3, nrow = 1, heights = unit(rep(8, 4), "in")) +
+  plot_annotation(
+    theme = theme(
+      plot.title = element_text(hjust = 0.5, size = 14)
+    )
+  )
+# Print the combined plot
+print(combined_plot)
+```
 
 以及numerical的variables
 ```{r}
-muner <- droped_data %>% select(-any_of(catego))
-names(muner)
+numer <- droped_data %>% select(-any_of(catego))
+names(numer)
+```
+描述
+```{r, fig.pos="H", fig.width=18, fig.height=18}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: fig-numdis_1
+#| fig-cap: "Distribution of numerical varibales"
+### Create Plots for Numeric Variables ###
+# Create a list to store plots
+plots <- list()
+# Loop through selected numeric variables and plot their distributions
+for (variable in names(numer %>% select(numeric_grade, pollscore, transparency_score))) {
+  plots[[variable]] <- ggplot(raw_data, aes_string(x = variable)) +
+    geom_histogram(binwidth = 0.5, fill = "#69b3a2", color = "black", alpha = 0.8) +
+    labs(title = paste("Distribution of", variable), x = variable, y = "Frequency") +
+    theme_minimal(base_size = 30) +
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 12),
+      axis.title = element_text(size = 10),
+      axis.text = element_text(size = 10)
+    )
+}
+### Combine and Print Plots ###
+# Combine all individual plots into one using patchwork with 2 columns and 4 rows
+combined_plot <- wrap_plots(plots, ncol = 3, nrow = 1, heights = unit(rep(8, 4), "in")) +
+  plot_annotation(
+    theme = theme(
+      plot.title = element_text(hjust = 0.5, size = 14)
+    )
+  )
+# Print the combined plot
+print(combined_plot)
+```
+描述
+```{r, fig.pos="H", fig.width=18, fig.height=18}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: fig-numdis_2
+#| fig-cap: "Distribution of numerical varibales"
+### Create Plots for Numeric Variables ###
+# Create a list to store plots
+plots <- list()
+# Loop through selected numeric variables and plot their distributions
+for (variable in names(numer %>% select(sample_size, pct))) {
+  plots[[variable]] <- ggplot(raw_data, aes_string(x = variable)) +
+    geom_histogram(binwidth = 5, fill = "#69b3a2", color = "black", alpha = 0.8) +
+    labs(title = paste("Distribution of", variable), x = variable, y = "Frequency") +
+    theme_minimal(base_size = 30) +
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 12),
+      axis.title = element_text(size = 10),
+      axis.text = element_text(size = 10)
+    )
+}
+### Combine and Print Plots ###
+# Combine all individual plots into one using patchwork with 2 columns and 4 rows
+combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(8, 8), "in")) +
+  plot_annotation(
+    theme = theme(
+      plot.title = element_text(hjust = 0.5, size = 14)
+    )
+  )
+# Print the combined plot
+print(combined_plot)
 ```
 
-	
+描述
+```{r, fig.pos="H", fig.width=18, fig.height=18}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: fig-date
+#| fig-cap: "Distribution of date varibales"
+
+### Define Variables and Prepare Data ###
+# Convert start_date and end_date to Date type
+raw_data$start_date <- ymd(raw_data$start_date)
+raw_data$end_date <- ymd(raw_data$end_date)
+# Define the date variables to plot
+date_variables <- c("start_date", "end_date")
+### Create Plots for Date Variables ###
+# Loop through selected date variables and plot their distributions
+plots <- list()
+for (variable in names(numer %>% select(start_date, end_date))) {
+  plots[[variable]] <- ggplot(raw_data, aes_string(x = variable)) +
+    geom_histogram(binwidth = 80, fill = "#69b3a2", color = "black", alpha = 0.8) +
+    labs(title = paste("Distribution of", variable), x = variable, y = "Frequency") +
+        theme_minimal(base_size = 30) +
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 12),
+      axis.title = element_text(size = 10),
+      axis.text = element_text(size = 10)
+    )
+}
+### Combine and Print Plots ###
+# Combine all individual plots into one using patchwork with 2 columns and 4 rows
+combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(8, 4), "in")) +
+  plot_annotation(
+    theme = theme(
+      plot.title = element_text(hjust = 0.5, size = 14)
+    )
+  )
+# Print the combined plot
+print(combined_plot)
+
+```
+
 ## Cleaned data
+在raw data中我们提到过，只有以下variables对我们的project有意义：
+```{r}
+names(droped_data)
+```
+在清理过程中，我们首先删除了NA值占比大于40%的值
+```{r}
+na_proportions <- sapply(names(droped_data), function(var) {
+  round(mean(is.na(raw_data[[var]])), 2)
+})
+
+# Create a data frame with variable names and their NA proportions
+na_proportions_data <- data.frame(Variable = names(droped_data), NA_Proportion = na_proportions)
+
+# Print the NA proportions using kable
+kable(na_proportions_data[, 2, drop = FALSE], col.names = c("NA Proportion"))
+```
+```{r}
+# Filter variables with NA proportion greater than 40%
+high_na_proportions <- na_proportions_data[na_proportions_data$NA_Proportion > 0.4, ]
+
+# Print the NA proportions greater than 40% using kable
+kable(high_na_proportions[, 2, drop = FALSE], col.names = c("Variable", "NA Proportion"))
+```
+```{r}
+del_5 <- c("sponsor_ids", "state", "sponsor_candidate_id", "sponsor_candidate_party", "tracking",
+           "internal","partisan","ranked_choice_round")
+droped_data <- droped_data %>% select(-any_of(del_5))
+names(droped_data)
+```
+
+我们选择了一些感兴趣的variables
+```{r}
+final <- c("poll_id","numeric_grade","pollscore","methodology","transparency_score","sample_size","population", 
+           "ranked_choice_reallocated", "hypothetical", "answer","pct","start_date", "end_date")
+final
+```
+
+然后我们Create a new variable called 'duration' (days difference between start_date and end_date) and remove 'start_date' and 'end_date'
+然后Group methodology by level
+然后Replace NA values - numerical variables with mean, categorical variables with mode
+然后Rename pct as score
+然后我们用janitor::clean_names。
+然后我们把每个candidate的数据单独提了出来。
+通过计算每个候选人加权过的score（score平均值*poll的个数）。发现前三名川普，哈里斯，拜登与剩下的候选人分数悬殊。又由于
+拜登已经退出参选。我们现在只考虑川普和哈里斯。
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Find the top 5 candidates.
+candidate_ranking <- raw_data %>%
+  group_by(candidate_name) %>%
+  summarize(
+    poll_count = n(),                    
+    avg_weighted_pct = mean(poll_count * pct, na.rm = TRUE)  
+  ) %>%
+  arrange(desc(avg_weighted_pct)) %>%    
+  slice_head(n = 5)                       
+print(candidate_ranking)
+```
+我们将它们两人的数据单独提出来，并且分成了train（70%）,test(30%)
+这四个文件就是我们的analysisdata。
+以下是川普训练集的部分数据以供参考
+```{r}
+kable(head(train_Trump), col.names = names(train_Trump))
+```
+
 
 ## Measurement
 
 ## Similar dataset
 
 # Model
-
 ## Model set-up
+### response variable
+我的的response variable是score，我们首先检查了两个训练集里面score的分布。
+```{r}
+# Plot a histogram for the 'pct' variable
+ggplot(train_Trump, aes(x = score)) +
+  geom_histogram(binwidth = 5, fill = "blue", color = "black", alpha = 0.7) +
+  labs(title = "Histogram of pct", x = "pct", y = "Frequency")
+ggplot(train_Harris, aes(x = score)) +
+  geom_histogram(binwidth = 5, fill = "blue", color = "black", alpha = 0.7) +
+  labs(title = "Histogram of pct", x = "pct", y = "Frequency")
+```
+它们都呈现正态分布，这是使用MLR的条件之一。
 
-## Model validation
-
-
-
-
+### Predictor
+在我们的两个train数据集里面，我们首先检查了所有numerical variable的关系。
 ```{r, fig.width=10, fig.height=10}
-data2 = raw_data %>% select("pollscore","transparency_score","sample_size")
+data2 = raw_data %>% select("numeric_grade", "pollscore","transparency_score","sample_size")
 pairs( data2 , main = "Predictor vs predictor")
+```
+由于我们发现pollscore和numerical grade之间呈现了明显的线性关系，因此，我们舍弃掉了numerical grade。
+因此我们的模型predictor是：
+```{r}
+predictors <- c("pollscore","methodology","transparency_score","sample_size","population", 
+           "ranked_choice_reallocated", "hypothetical", "duration")
+```
+### alternative models
+最开始我们的模型是
+```{r}
+Trump_model_1 <- lm(
+  score ~ pollscore + transparency_score + duration + sample_size + population + hypothetical + ranked_choice_reallocated +
+    methodology, data = train_Trump)
+Harris_model_1 <- lm(
+  score ~ pollscore + transparency_score + duration + sample_size + population + hypothetical + ranked_choice_reallocated +
+    methodology, data = train_Harris)
+```
+
+```{r}
+# Get the summary of the model
+Harris_summary <- summary(Harris_model_1)
+# Extract coefficients from the summary
+coefficients <- Harris_summary$coefficients
+# Extract p-values
+Harris_p_values <- coefficients[, 4]
+# Create a data frame with the results
+Harris_results_table <- data.frame(
+  Variable = rownames(coefficients),
+  P_Value = format(Harris_p_values, scientific = TRUE)
+)
+Harris_kable <- kable(Harris_results_table[, 2, drop = FALSE], caption = "Harris", col.names = c("Variable", "P-value"))
+# Get the summary of the model
+Trump_summary <- summary(Trump_model_1)
+# Extract coefficients from the summary
+coefficients <- Trump_summary$coefficients
+# Extract p-values
+Trump_p_values <- coefficients[, 4]
+# Create a data frame with the results
+Trump_results_table <- data.frame(
+  Variable = rownames(coefficients),
+  P_Value = format(Trump_p_values, scientific = TRUE)
+)
+Trump_kable <- kable(Trump_results_table[, 2, drop = FALSE], caption = "Trump", col.names = c("Variable", "P-value"))
+
+grid.arrange(tableGrob(Trump_kable), tableGrob(Harris_kable), nrow = 1)
+
+
+```
+
+去掉不显著的变量：methodology，ranked_choice_reallocated
+
+```{r}
+summary(Trump_model_1)
+summary(Harris_model_1)
+```
+
+```{r}
+summary(Trump_model)
+summary(Harris_model)
+```
+
+
+## validation
+从您的结果来看，所有变量的 GVIF 值都在 1 到 1.3 之间，这些数值非常低，表明各个自变量之间的共线性很小，模型并没有因为共线性而受到显著影响。
+```{r}
+vif(Trump_model)
+vif(Harris_model)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(Harris_model,1)
+plot(Harris_model,2)
 ```
 
 ```{r}
 par(mfrow=c(2,2))
 plot(Trump_model,1)
 plot(Trump_model,2)
-
 ```
+然后就是描述一下response variable是normal的，然后numerical variable没有显著关系（这些在打他部分有讲过）
+
+总结，满足了MLR的条件，说明我们的好
 
 
 
@@ -142,10 +480,6 @@ plot(Trump_model,2)
 
 
 
-
-
-
-## Predictor variables
 
 
 
