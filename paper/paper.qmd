@@ -63,13 +63,6 @@ del_2 <- c("pollster", "sponsors", "display_name", "pollster_rating_name", "spon
 droped_data <- droped_data %>% select(-any_of(del_2))
 del_2
 ```
-此外，在已知我们分析的是美国总统竞选的前提下，我们删除以下variables：
-```{r}
-# 这里需要画一个table，展示以知变量
-del_3 <- c("office_type", "seat_number", "seat_name")
-droped_data <- droped_data %>% select(-any_of(del_3))
-del_3
-```
 常数变量我们也不做讨论，因为无法影响我们的预测，它们是：
 ```{r}
 # Identify variables where all values are the same (including NA)
@@ -79,7 +72,8 @@ same_value_data <- data.frame(Variable = same_value_variables, Value = sapply(sa
 unique(na.omit(droped_data[[var]]))[1]))
 # Print the names of variables with all identical values using kable
 kable(same_value_data[, 2, drop = FALSE], col.names = c("Variable", "Value"))
-del_4 <- c("endorsed_candidate_id", "endorsed_candidate_party", "subpopulation", "cycle", "election_date", "stage", "nationwide_batch")
+del_4 <- c("endorsed_candidate_id", "endorsed_candidate_party", "subpopulation", "cycle", "election_date", "stage", "nationwide_batch", 
+           "office_type", "seat_number", "seat_name")
 droped_data <- droped_data %>% select(-any_of(del_4))
 ```
 
@@ -300,7 +294,9 @@ print(combined_plot)
 ```
 
 ## Cleaned data
-在raw data中我们提到过，只有以下variables对我们的project有意义：
+在raw data中我们提到过，在总共的52个variables。其中一些比如“url”之类的变量与该项目明显无关。有一部分位常数variable，比如
+“election_date”的值全部都是“11/5/24”。还有一部分是意思相同的variables，比如说“pollster_id”和“pollster”。另外还有一部分是
+只有以下variables对我们的project有意义：
 ```{r}
 names(droped_data)
 ```
