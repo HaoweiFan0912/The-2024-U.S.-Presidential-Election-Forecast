@@ -24,21 +24,90 @@ library(dplyr)
 library(arrow)
 set.seed(912)
 #### Read data ####
-train_DeeSantis <- read_parquet(here::here("data/02-analysis_data/01-training/train_DeSantis.parquet"))
+raw_data <- read_csv(here::here("data/01-raw_data/raw_data.csv"))
 train_Trump <- read_parquet(here::here("data/02-analysis_data/01-training/train_Trump.parquet"))
 train_Harris <- read_parquet(here::here("data/02-analysis_data/01-training/train_Harris.parquet"))
 Trump_model <- readRDS(here::here("models/Trump_model.rds"))
-
+Harris_model <- readRDS(here::here("models/Harris_model.rds"))
 ```
 
 # Introduction
-
 
 # Data {#sec-data}
 
 ## Overview
 
 ## Raw data
+```{r}
+# Identify variables (columns) that are completely empty (all NA values)
+empty_variables <- names(raw_data)[sapply(raw_data, function(x) all(is.na(x)))]
+
+# Print the names of empty variables
+print(empty_variables)
+```
+
+```{r}
+names(raw_data)
+```
+
+Raw data 一共包含了52个variable以及17133个sample。52个varibles中以下几个与我们的project明显无关，我们在此不做讨论：
+```{r}
+# 这里需要画一个table，展示无关变量
+del_1 <- c("notes", "url", "url_article", "url_topline", "url_crosstab", "source")
+droped_data <- raw_data %>% select(-any_of(del_1))
+names(droped_data)
+```
+此外，还有一些相同的variables，我们保留其一，剩下的也不做讨论，它们包括：
+```{r}
+# 这里需要画一个table，展示删除的重复变量
+del_2 <- c("pollster", "sponsors", "display_name", "pollster_rating_name", "sponsor_candidate", "endorsed_candidate_name",
+           "population_full", "candidate_id", "candidate_name")
+droped_data <- droped_data %>% select(-any_of(del_2))
+names(droped_data)
+```
+此外，在已知我们分析的是美国总统竞选的前提下，我们删除以下variables：
+```{r}
+# 这里需要画一个table，展示以知变量
+del_3 <- c("office_type", "seat_number", "seat_name")
+droped_data <- droped_data %>% select(-any_of(del_3))
+names(droped_data)
+```
+常数变量我们也不做讨论，因为无法影响我们的预测，它们是：
+```{r}
+# Identify variables where all values are the same (including NA)
+same_value_variables <- names(droped_data)[sapply(droped_data, function(x) length(unique(x)) == 1)]
+# Create a data frame with variables and their unique values
+same_value_data <- data.frame(Variable = same_value_variables, Value = sapply(same_value_variables, function(var)
+unique(na.omit(droped_data[[var]]))[1]))
+# Print the names of variables with all identical values using kable
+kable(same_value_data, col.names = c("Variable", "Value"))
+```
+```{r}
+del_4 <- c("endorsed_candidate_id", "endorsed_candidate_party", "subpopulation", "cycle", "election_date", "stage", "nationwide_batch")
+droped_data <- droped_data %>% select(-any_of(del_4))
+names(droped_data)
+```
+其中categorical的有
+```{r}
+catego <- c("poll_id", "pollster_id", "sponsor_ids", "pollster_rating_id", "methodology", "state", "start_date", "end_date",
+         "sponsor_candidate_id", "sponsor_candidate_party", "question_id", "population", "tracking", "created_at", "internal",
+         "partisan","race_id", "ranked_choice_reallocated", "ranked_choice_round", "hypothetical","party","answer")
+```
+重要的categorical为下面的，剩下的将在appendix阐述
+```{r}
+catego_inp <- c("poll_id", "methodology", )
+```
+
+
+
+
+
+以及numerical的variables
+```{r}
+muner <- droped_data %>% select(-any_of(catego))
+names(muner)
+```
+
 	
 ## Cleaned data
 
@@ -49,12 +118,14 @@ Trump_model <- readRDS(here::here("models/Trump_model.rds"))
 # Model
 
 ## Model set-up
-```{r}
-names(train_Trump)
-```
+
+## Model validation
+
+
+
 
 ```{r, fig.width=10, fig.height=10}
-data2 = train_Trump %>% select("numeric_grade","pollscore","transparency_score","sample_size","duration")
+data2 = raw_data %>% select("pollscore","transparency_score","sample_size")
 pairs( data2 , main = "Predictor vs predictor")
 ```
 
@@ -62,8 +133,7 @@ pairs( data2 , main = "Predictor vs predictor")
 par(mfrow=c(2,2))
 plot(Trump_model,1)
 plot(Trump_model,2)
-plot(Trump_model,3)
-plot(Trump_model,4)
+
 ```
 
 
@@ -71,14 +141,7 @@ plot(Trump_model,4)
 
 
 
-```{r}
-column_names <- c("transparency_score", "ranked_choice_reallocated","methodology","hypothetical", "population")
-variables_string <- paste(column_names, collapse = " + ")
-formula_string <- paste("score ~", variables_string)
-formula <- as.formula(formula_string)
-m2 <- lm(formula, data = train_Trump)
-summary(m2)
-```
+
 
 
 

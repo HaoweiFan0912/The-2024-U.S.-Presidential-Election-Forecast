@@ -15,7 +15,6 @@ library(tidyverse)
 
 Trump <- read_parquet("data/02-analysis_data/01-training/train_Trump.parquet")
 Harris <- read_parquet("data/02-analysis_data/01-training/train_Harris.parquet")
-DeSantis <- read_parquet("data/02-analysis_data/01-training/train_DeSantis.parquet")
 
 # Function to create and save a linear model for a candidate
 
@@ -25,12 +24,9 @@ Trump_model <- lm(
 Harris_model <- lm(
   score ~ pollscore + transparency_score + duration + sample_size + population + 
     ranked_choice_reallocated + hypothetical + methodology, data = Harris)
-DeSantis_model <- lm(
-  score ~ pollscore + transparency_score + duration + sample_size + population + 
-    ranked_choice_reallocated + hypothetical + methodology, data = DeSantis)
 
 # Save the model
 saveRDS(Trump_model, file = "models/Trump_model.rds")
 saveRDS(Harris_model, file = "models/Harris_model.rds")
-saveRDS(DeSantis_model, file = "models/DeSantis_model.rds")
+
 
