@@ -12,6 +12,7 @@
 library(tidyverse)
 library(rstanarm)
 library(patchwork)
+library(moments)
 raw_data <- read_csv(here::here("data/01-raw_data/raw_data.csv"))
 ```
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
@@ -121,3 +122,64 @@ candidate_ranking <- raw_data %>%
 print(candidate_ranking)
 ```
 
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#select significant values based on variable type of each candidate
+
+# Define the function to select feature values based on variable type
+select_feature_value <- function(data, candidate_name) {
+  feature_values <- list()
+  
+  for (col_name in names(data)) {
+    col_data <- data[[col_name]]
+    
+    # Numeric variables: Choose mean or median based on skewness
+    if (is.numeric(col_data)) {
+      # Check if there are enough valid values to compute skewness
+      if (sum(!is.na(col_data)) > 1) {  # Ensure there is more than one valid value
+        skew_val <- skewness(col_data, na.rm = TRUE)
+        if (!is.na(skew_val) && skew_val < 1) {
+          feature_values[[col_name]] <- mean(col_data, na.rm = TRUE)
+        } else {
+          feature_values[[col_name]] <- median(col_data, na.rm = TRUE)
+        }
+      } else {
+        # Default to median if skewness cannot be computed
+        feature_values[[col_name]] <- median(col_data, na.rm = TRUE)
+      }
+    }
+    
+    # Categorical variables: Choose mode (most frequent value)
+    else if (is.character(col_data)) {
+      feature_values[[col_name]] <- Mode(col_data)
+    }
+    
+    # Boolean variables: Choose TRUE or FALSE based on which one appears more frequently
+    else if (is.logical(col_data)) {
+      true_count <- sum(col_data, na.rm = TRUE)
+      false_count <- sum(!col_data, na.rm = TRUE)
+      feature_values[[col_name]] <- if (true_count >= false_count) TRUE else FALSE
+    }
+  }
+  
+  # Add the candidate name to the results
+  feature_values[["Candidate"]] <- candidate_name
+  return(feature_values)
+}
+
+# Define a function to calculate the mode (most frequent value)
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+# Calculate feature values for each candidate
+trump_features <- select_feature_value(trump_test, "Donald Trump")
+harris_features <- select_feature_value(harris_test, "Kamala Harris")
+
+# Combine results into a single data frame for easy viewing
+all_candidate_features <- bind_rows(trump_features, harris_features)
+
+# Display the final table of feature values
+print(all_candidate_features)
+
+```
