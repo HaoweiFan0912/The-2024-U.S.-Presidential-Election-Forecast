@@ -80,26 +80,25 @@ raw_data_cleaned <- raw_data_cleaned %>%
 # Step 7: Rename pct
 names(raw_data_cleaned)[names(raw_data_cleaned) == "pct"] <- "score"
 
-# Step 8: Clean name
-raw_data_cleaned <- janitor::clean_names(raw_data_cleaned)
 
-# Step 9: Filter data set by unique answer
+# Step 8: Filter data set by unique answer
 candidates <- unique(raw_data_cleaned$answer)
 for (candidate in candidates) {
   # Filter data for each candidate and remove rows with NA values
   candidate_data <- raw_data_cleaned %>%
     filter(answer == candidate) %>% 
     dplyr::select(-answer)%>% 
-    dplyr::select(-poll_id)
+    dplyr::select(-poll_id)%>%
+    janitor::clean_names()
   # Define output file path for each candidate
   output_file <- file.path("data/03-cleaned_data", paste0(candidate, "_cleaned_data.parquet"))
   # Save each candidate's cleaned data to a separate Parquet file
   write_parquet(candidate_data, output_file)
 }
 
-# Step 10: find analysis data
-# Split the top 3 files into 3:7 ratio and save them
-for (file in c("Trump_cleaned_data.parquet", "Harris_cleaned_data.parquet", "DeSantis_cleaned_data.parquet")) {
+# Step 9: find analysis data
+# Split the top 2 files into 3:7 ratio and save them
+for (file in c("Trump_cleaned_data.parquet", "Harris_cleaned_data.parquet")) {
   # Read the Parquet file into a data frame
   df <- read_parquet(file.path("data/03-cleaned_data/", file))
   # Split the data into 3:7 ratio
