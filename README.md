@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project contains a series of scripts and data folders for a comprehensive data analysis workflow. Each folder and file is organized to support tasks from data simulation to model building and replication. Below is an overview of the project’s folder structure and the purpose of each file.
+This README provides a structured guide to the project's organization, data sources, processing scripts, and modeling results for predicting candidate support in the 2024 U.S. presidential election. The directory structure includes simulated, raw, and cleaned data, along with model files, scripts, and supporting documentation. Key directories and files are described to facilitate navigation and understanding of the project workflow, from data simulation and preprocessing to model training and evaluation. Additionally, the README outlines the usage of large language models (LLMs) in generating code snippets, documentation, and analysis explanations.
 
 ## Directory Structure
 
@@ -17,16 +17,19 @@ The repo is structured as:
 │   ├── 01-raw_data/
 │   │   └── raw_data.csv
 │   ├── 02-analysis_data/
+│   │   ├── 00-full/
+│   │   │   ├── full_Harris.parquet
+│   │   │   └── full_Trump.parquet
 │   │   ├── 01-training/
-│   │   │   ├── train_DeSantis.parquet
 │   │   │   ├── train_Harris.parquet
 │   │   │   └── train_Trump.parquet
 │   │   └── 02-testing/
-│   │       ├── test_DeSantis.parquet
 │   │       ├── test_Harris.parquet
 │   │       └── test_Trump.parquet
 │   └── 03-cleaned_data/
-│           └── candidate_name_cleaned_data.parquet
+│           ├── Trump_cleaned_data.parquet
+│           ├── Harris_cleaned_data.parquet
+│           └── ...
 ├── models/
 │   ├── Desantis_model.rds
 │   ├── Harris_model.rds
@@ -41,7 +44,7 @@ The repo is structured as:
 ├── paper/
 │   ├── paper_files/
 │   ├── paper.qmd
-│   └──paper.pdf
+│   └── paper.pdf
 ├── scripts/
 │   ├── 00-simulate_data.R
 │   ├── 01-test_simulated_data.R
@@ -62,7 +65,7 @@ The repo is structured as:
 
 This directory contains all data files used in the project.
 
--   `00-simulated_data`: Contains simulated data files in Parquet format for each candidate.
+#### `00-simulated_data/`: Contains simulated data files in Parquet format for each candidate.
 
 -   `simulated_candidate_1.parquet`: Simulated data for Candidate 1.
 
@@ -70,15 +73,19 @@ This directory contains all data files used in the project.
 
 -   `simulated_candidate_3.parquet`: Simulated data for Candidate 3.
 
--   `01-raw_data/`: Contains the raw data collected for the analysis.
+#### `01-raw_data/`: Contains the raw data collected for the analysis.
 
 -   `raw_data.csv`: The raw dataset file.
 
--   `02-analysis_data/`: Contains data files prepared for model analysis, divided into training and testing sets.
+#### `02-analysis_data/`: Contains data files prepared for model analysis, divided into training and testing sets.
+
+-   `00-full/`: Full datasets for each candidate.
+
+-   `train_Harris.parquet`: Full data for Harris.
+
+-   `train_Trump.parquet`: Full data for Trump.
 
 -   `01-training/`: Training datasets for each candidate.
-
--   `train_DeSantis.parquet`: Training data for DeSantis.
 
 -   `train_Harris.parquet`: Training data for Harris.
 
@@ -86,15 +93,13 @@ This directory contains all data files used in the project.
 
 -   `02-testing/`: Testing datasets for each candidate.
 
--   `test_DeSantis.parquet`: Testing data for DeSantis.
-
 -   `test_Harris.parquet`: Testing data for Harris.
 
 -   `test_Trump.parquet`: Testing data for Trump.
 
--   `03-cleaned_data/`: Contains cleaned data files.
+#### `03-cleaned_data/`: Contains cleaned data files.
 
--   `candidate_name_cleaned_data.parquet`: Cleaned data for individual candidates.
+-   `candidate_name_cleaned_data.parquet`: Multiple cleaned data for individual candidates.
 
 ### 2. models
 
@@ -108,18 +113,22 @@ This directory contains the trained models for each candidate.
 
 Contains auxiliary files and documentation.
 
--   `llm_usage/`: Information on model usage, LaTeX formatting, and plotting.
+#### `llm_usage/`: Information on model usage, LaTeX formatting, and plotting.
+
 -   `01-Model`: Resources related to model usage.
 -   `02-Latex`: LaTeX resources for document preparation.
--   `03-Plots_and_tables`: Resources for plotting and tables.
--   `sketches/`: Visual or conceptual sketches related to the project.
--   `variables_descriptions/`: Detailed descriptions of the variables used in the dataset.
+-   `03-Plots_and_tables`: Resources for plotting and tables. \#### `sketches/`: Visual or conceptual sketches related to the project. \#### `variables_descriptions/`: Detailed descriptions of the variables used in the dataset.
+
+#### `sketches/`: This folder contains preliminary drafts, diagrams, or conceptual sketches related to the project.
+
+#### `variables_descriptions/`: This folder includes detailed descriptions of the variables used in the dataset.
 
 ### 4. paper
 
 This directory includes files related to the research paper.
 
--   `paper_files/`: Supporting files for the paper.
+#### `paper_files/`: Supporting files for the paper.
+
 -   `paper.qmd`: Quarto document source file for the paper.
 -   `paper.pdf`: Final version of the research paper in PDF format.
 
@@ -142,4 +151,4 @@ R scripts used for data simulation, processing, model training, testing, and rep
 
 ## Statement on LLM usage
 
-Aspects of the code were written with the help of the auto-complete tool, Codriver. The abstract and introduction were written with the help of ChatHorse and the entire chat history is available in inputs/llms/usage.txt.
+This project utilized a Language Learning Model (LLM), specifically OpenAI's ChatGPT, to assist with various tasks, including data processing, code generation, troubleshooting, and documentation writing. The LLM was used to expedite the development process by providing structured guidance, generating sample code snippets, and suggesting improvements for code efficiency and readability. The entire chat history is available in other/llm_usage.
