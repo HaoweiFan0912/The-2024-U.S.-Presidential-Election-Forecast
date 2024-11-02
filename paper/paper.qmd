@@ -26,18 +26,21 @@ library(patchwork)
 library(car)
 library(kableExtra)
 library(gridExtra)
+library(moments)
 set.seed(912)
 #### Read data ####
 raw_data <- read_csv(here::here("data/01-raw_data/raw_data.csv"))
 train_Trump <- read_parquet(here::here("data/02-analysis_data/01-training/train_Trump.parquet"))
 train_Harris <- read_parquet(here::here("data/02-analysis_data/01-training/train_Harris.parquet"))
+test_Trump <- read_parquet(here::here("data/02-analysis_data/02-testing/test_Trump.parquet"))
+test_Harris <- read_parquet(here::here("data/02-analysis_data/02-testing/test_Harris.parquet"))
+full_Trump <- read_parquet(here::here("data/02-analysis_data/00-full/full_Trump.parquet"))
+full_Harris <- read_parquet(here::here("data/02-analysis_data/00-full/full_Harris.parquet"))
 Trump_model <- readRDS(here::here("models/Trump_model.rds"))
 Harris_model <- readRDS(here::here("models/Harris_model.rds"))
 ```
 
 # Introduction
-
-
 
 # Data {#sec-data}
 
@@ -98,11 +101,8 @@ kable(variable_descriptions) %>%
   column_spec(1, width = "4.5cm") %>% # Adjust the width of the first column
   column_spec(2, width = "10cm")    # Adjust the width of the second column
 ```
-
-
 52个varibles中以下几个与我们的project明显无关，我们在此不做讨论：
 "notes", "url", "url_article", "url_topline", "url_crosstab", "source"
-
 ```{r, fig.height=90, fig.width=90}
 #| warning: false
 #| message: false
@@ -138,7 +138,6 @@ del_4 <- c("endorsed_candidate_id", "endorsed_candidate_party", "subpopulation",
            "office_type", "seat_number", "seat_name")
 droped_data <- droped_data %>% select(-any_of(del_4))
 ```
-
 其中categorical的有"poll_id", "pollster_id", "sponsor_ids", "pollster_rating_id", "methodology", "state",
          "sponsor_candidate_id", "sponsor_candidate_party", "question_id", "population", "tracking", "created_at", "internal",
          "partisan","race_id", "ranked_choice_reallocated", "ranked_choice_round", "hypothetical","party","answer"
@@ -260,7 +259,6 @@ combined_plot <- wrap_plots(plots, ncol = 3, nrow = 1, heights = unit(rep(8, 4),
 # Print the combined plot
 print(combined_plot)
 ```
-
 以及numerical的variables："numeric_grade"      "pollscore"          "transparency_score" "start_date"         "end_date"        "sample_size" "pct"
 ```{r}
 #| warning: false
@@ -334,7 +332,6 @@ combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(8, 8),
 # Print the combined plot
 print(combined_plot)
 ```
-
 描述
 ```{r, fig.pos="H", fig.width=18, fig.height=18}
 #| warning: false
@@ -375,10 +372,8 @@ combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(8, 4),
 print(combined_plot)
 
 ```
-
 ## Cleaned data
 In the raw data, we initially identified a total of 52 variables. Some of these variables, such as 'url', are clearly unrelated to the objectives of this project. There are also constant variables, such as 'election_date', which consistently contains the value '11/5/24'. Additionally, we found duplicate variables conveying the same information, like 'pollster_id' and 'pollster'. Therefore, we first removed these irrelevant and redundant variables. The remaining variables are as follows:
-
 ```{r, fig.height=90, fig.width=90}
 #| warning: false
 #| message: false
@@ -397,13 +392,6 @@ matrix_data <- matrix(c(column_names, rep("", num_columns * num_rows - length(co
 kable(as.data.frame(matrix_data), 
       col.names = NULL)
 ```
-
-
-
-
-
-
-
 Next, we calculated the percentage of missing values for each variable across the entire dataset. We then removed all variables with more than 40% missing values. These variables, along with their respective proportions of missing values, are as follows:
 ```{r}
 #| warning: false
@@ -429,9 +417,7 @@ del_5 <- c("sponsor_ids", "state", "sponsor_candidate_id", "sponsor_candidate_pa
 droped_data <- droped_data %>% select(-any_of(del_5))
 
 ```
-
-
-Since the influence of pollsters can be quantified using their ratings, such as 'numeric_grade', 'pollscore', and 'transparency_score', we removed these variables to simplify the dataset and the model. Similarly, 'created_at' was also removed due to its strong correlation with 'start_date'. At this point, the remaining variables are as follows:
+Since the influence of pollsters can be quantified using their ratings, such as 'numeric_grade', 'pollscore', and 'transparency_score', we removed these variables to simplify the dataset and the model. Similarly, 'created_at' was also removed due to its strong correlation with 'start_date'. 
 ```{r}
 #| warning: false
 #| message: false
@@ -447,9 +433,7 @@ Finally, due to the limitations of our model, we removed 'race_id', 'party', and
 # Get unique Question IDs and print the count
 unique_question_ids <- unique(raw_data$question_id)
 ```
-
 Finally, the remaining variables are as follows:
-
 ```{r, fig.height=30, fig.width=30}
 #| warning: false
 #| message: false
@@ -470,44 +454,11 @@ matrix_data <- matrix(c(column_names, rep("", num_columns * num_rows - length(co
 kable(as.data.frame(matrix_data), 
       col.names = NULL)
 ```
+After finalizing the variables, we first created a new variable named 'duration', which replaced 'start_date' and 'end_date'. This new variable represents the number of days between 'start_date' and 'end_date'.Next, we categorized the 51 different methodologies into four levels, ranging from the least reliable and accurate (level_1) to the most reliable (level_4). 
 
+Subsequently, we handled the missing values by imputing numerical variables with their mean values and categorical variables with their mode. Since our results are not exact percentages, we used 'score' to name what would typically be called 'pct'. We then finalize and tidy up the variable names.
 
-
-
-
-
-
-
-
-
-After finalizing the variables, we first created a new variable named 'duration', which replaced 'start_date' and 'end_date'. This new variable represents the number of days between 'start_date' and 'end_date'.Next, we categorized the 51 different methodologies into four levels, ranging from the least reliable and accurate (level_1) to the most reliable (level_4). The specific classifications are as follows:
-```{r}
-#| warning: false
-#| message: false
-#| echo: false
-#| label: tbl-mc
-#| tbl-cap: "Methodology classfication"
-
-# Create a summary data frame for the methodologies and their levels
-methodology_summary <- data.frame(
-  Level = c("level 1", "level 2", "level 3", "level 4"),
-  Methodologies = c(
-    paste(c("Email", "Email/Online Ad", "Live Phone/Text-to-Web/Email/Mail-to-Web/Mail-to-Phone", "Mail-to-Web/Mail-to-Phone", "Online Ad"), collapse = ", "),
-    paste(c("App Panel", "IVR", "IVR/Live Phone/Text/Online Panel/Email", "IVR/Online Panel", "IVR/Online Panel/Email", "IVR/Online Panel/Text-to-Web", "IVR/Online Panel/Text-to-Web/Email", "IVR/Text", "IVR/Text-to-Web", "IVR/Text-to-Web/Email", "Live Phone/Email", "Live Phone/Online Panel/Mail-to-Web", "Live Phone/Text/Online Ad", "Live Phone/Text-to-Web/Email", "Live Phone/Text-to-Web/Email/Mail-to-Web", "Live Phone/Text-to-Web/Online Ad", "Online Panel/Email", "Online Panel/Email/Text-to-Web", "Online Panel/Online Ad", "Text-to-Web/Email", "Text-to-Web/Online Ad"), collapse = ", "),
-    paste(c("IVR/Live Phone/Online Panel", "IVR/Live Phone/Online Panel/Text-to-Web", "IVR/Live Phone/Text", "IVR/Live Phone/Text-to-Web", "Live Phone/Online Panel/App Panel", "Live Phone/Online Panel/Text", "Live Phone/Online Panel/Text-to-Web", "Live Phone/Online Panel/Text-to-Web/Text", "Live Phone/Text", "Live Phone/Text/Online Panel", "Live Phone/Text-to-Web", "Live Phone/Text-to-Web/App Panel", "Online Panel", "Online Panel/Text", "Online Panel/Text-to-Web", "Online Panel/Text-to-Web/Text", "Text", "Text-to-Web"), collapse = ", "),
-    paste(c("Live Phone", "Live Phone/Online Panel", "Live Phone/Probability Panel", "Online Panel/Probability Panel", "Probability Panel"), collapse = ", ")
-  )
-)
-
-# Print the summary of methodologies and their levels using kable
-kable(methodology_summary, col.names = c("Level", "Methodologies")) %>%
-  column_spec(1, width = "1.5cm") %>% # Adjust the width of the first column
-  column_spec(2, width = "13cm")
-```
-In our classification, we primarily considered whether the survey method was active or passive, giving higher scores to methodologies involving active outreach by statistical agencies. We then averaged the scores of all methods used in each poll; the higher the average, the higher the assigned level.
-
-Subsequently, we handled the missing values by imputing numerical variables with their mean values and categorical variables with their mode. Since our results are not exact percentages, we used 'score' to name what would typically be called 'pct'. We then used janitor::clean_names to finalize and tidy up the variable names.Next, we extracted the data for each candidate individually. We calculated a weighted score by weighting according to the number of times each candidate was mentioned in the polls. After comparison, we observed that the top three candidates—Trump, Harris, and Biden—had significantly higher scores than the remaining candidates. Given that Biden has withdrawn from the race, we are now focusing only on the datasets for Trump and Harris for further analysis. The specific weighted scores for the top five candidates are as follows:
-
+Next, we extracted the data for each candidate individually. We calculated a weighted score by weighting according to the number of times each candidate was mentioned in the polls. After comparison, we observed that the top three candidates—Trump, Harris, and Biden—had significantly higher scores than the remaining candidates. Given that Biden has withdrawn from the race, we are now focusing only on the datasets for Trump and Harris for further analysis. The specific weighted scores for the top five candidates are as follows:
 ```{r}
 #| warning: false
 #| message: false
@@ -533,46 +484,12 @@ Next, we split the data for Trump and Harris into a training set (70%) and a tes
 #| echo: false
 kable(head(train_Trump), col.names = names(train_Trump))
 ```
-
-
 ## Measurement
 
 ## Similar dataset
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Model
+
 ## Model overview
 我们一共有2个model，分别用来预测川普和哈里斯在2024年11月5日美国总统竞选的最终支持率。
 
@@ -583,14 +500,73 @@ Score_{Harris} = &\alpha_1Pollscore + \alpha_2Transparency\_score + \alpha_3Dura
         &\alpha_4Sample\_size + \alpha_5Population + \alpha_6Hypothetical + \alpha_0 \notag
 \end{align}
 
+值得注意的是我们使用的是Multiple linear regression (MLR), 意味着我们的假设：
+1. 多元线性回归的核心前提是因变量（结果变量）与自变量之间存在线性关系。可以通过散点图直观检查这种线性关系，理想情况下应显示出直线关系而非曲线关系。
+2. 残差（观测值与预测值之间的差异）呈正态分布。可以通过观察Q-Q 图来评估这一假设。
+3. 自变量之间的相关性不过高，即避免多重共线性。这可以通过方差膨胀因子（VIF）来检测。
+4. 同方差性：误差项（残差）的方差应在自变量的所有水平上保持一致。残差与预测值的散点图不应显示出明显的模式。
+
+此外，在我们的模型中，duration变量是原数据中“start_date” 和 “end_date” 的差值，这意味着我们的模型无法解释时间序列对结果带来的影响。但是考虑到这两者之间存在的线性关系，我们不得已将其简化，以满足使用MLR的假设。
+
+另外，原数据中methodology有51种不同的总类。categorical variable 过多的种类会增加我们模型的复杂度，因此我们将其简化为了4个level。
+其中level 1 代表该种methodology的可靠性最低，level 4 代表该种methodology的可靠性最高。具体的分类如下：
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-mc
+#| tbl-cap: "Methodology classfication"
+
+# Create a summary data frame for the methodologies and their levels
+methodology_summary <- data.frame(
+  Level = c("level 1", "level 2", "level 3", "level 4"),
+  Methodologies = c(
+    paste(c("Email", "Email/Online Ad", "Live Phone/Text-to-Web/Email/Mail-to-Web/Mail-to-Phone", "Mail-to-Web/Mail-to-Phone", "Online Ad"), collapse = ", "),
+    paste(c("App Panel", "IVR", "IVR/Live Phone/Text/Online Panel/Email", "IVR/Online Panel", "IVR/Online Panel/Email", "IVR/Online Panel/Text-to-Web", "IVR/Online Panel/Text-to-Web/Email", "IVR/Text", "IVR/Text-to-Web", "IVR/Text-to-Web/Email", "Live Phone/Email", "Live Phone/Online Panel/Mail-to-Web", "Live Phone/Text/Online Ad", "Live Phone/Text-to-Web/Email", "Live Phone/Text-to-Web/Email/Mail-to-Web", "Live Phone/Text-to-Web/Online Ad", "Online Panel/Email", "Online Panel/Email/Text-to-Web", "Online Panel/Online Ad", "Text-to-Web/Email", "Text-to-Web/Online Ad"), collapse = ", "),
+    paste(c("IVR/Live Phone/Online Panel", "IVR/Live Phone/Online Panel/Text-to-Web", "IVR/Live Phone/Text", "IVR/Live Phone/Text-to-Web", "Live Phone/Online Panel/App Panel", "Live Phone/Online Panel/Text", "Live Phone/Online Panel/Text-to-Web", "Live Phone/Online Panel/Text-to-Web/Text", "Live Phone/Text", "Live Phone/Text/Online Panel", "Live Phone/Text-to-Web", "Live Phone/Text-to-Web/App Panel", "Online Panel", "Online Panel/Text", "Online Panel/Text-to-Web", "Online Panel/Text-to-Web/Text", "Text", "Text-to-Web"), collapse = ", "),
+    paste(c("Live Phone", "Live Phone/Online Panel", "Live Phone/Probability Panel", "Online Panel/Probability Panel", "Probability Panel"), collapse = ", ")
+  )
+)
+
+# Print the summary of methodologies and their levels using kable
+kable(methodology_summary, col.names = c("Level", "Methodologies")) %>%
+  column_spec(1, width = "1.5cm") %>% # Adjust the width of the first column
+  column_spec(2, width = "13cm")
+```
+这样分的原因是：。。。。。。。。。。。。。。。
+
+此外，之所以我们只对川普和哈里斯的数据进行比较，预测他们之间谁会竞选成功。是因为我们通过比较所有候选人的加权竞争力得分后发现，前三名：川普，哈里斯，以及拜登与其余候选人差距非常大。@tbl-t5c可以看出其中第三名哈里斯的加权竞争力得分是109501.54是第四名的18822.81分的5.8倍之多。考虑到拜登以及推出参选，我们最后决定只对竞争力最大的川普和哈里斯进行预测。具体加权公式如下：
 
 
 
-其中
+
+weighted\_score =  \frac{ {\textstyle \sum_{i=1}^{n}score_i} }{n}\times \frac{ {\textstyle \sum_{i=1}^{n}Sample\_Size_i} }{n}  
 
 
 
-score ~ pollscore + transparency_score + duration + sample_size + population + hypothetical
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-t5c
+#| tbl-cap: "Top 5 Candidates"
+# Find the top 5 candidates.
+candidate_ranking <- raw_data %>%
+  group_by(candidate_name) %>%
+  summarize(
+    poll_count = n(),                    
+    avg_weighted_pct = mean(poll_count * pct, na.rm = TRUE)  
+  ) %>%
+  arrange(desc(avg_weighted_pct)) %>%    
+  slice_head(n = 5)                       
+kable(candidate_ranking, col.names = c("candidate", "number of polls", "weighted score"))
+  
+```
+
+
+
+
 
 
 
@@ -760,6 +736,7 @@ summary(Harris_model)
 ```
 
 
+
 ## validation
 从您的结果来看，所有变量的 GVIF 值都在 1 到 1.3 之间，这些数值非常低，表明各个自变量之间的共线性很小，模型并没有因为共线性而受到显著影响。
 ```{r}
@@ -786,13 +763,120 @@ plot(Trump_model,1)
 plot(Trump_model,2)
 ```
 然后就是描述一下response variable是normal的，然后numerical variable没有显著关系（这些在打他部分有讲过）
-
 总结，满足了MLR的条件，说明我们的好
+```{r,message=FALSE, echo=FALSE,warning=FALSE,fig.height = 10, fig.width=10}
+# Generate predictions using the model
+plots <- list()
+predictions <- predict(Harris_model, newdata = test_Harris)
+
+actual <- test_Harris$score
+
+results_df <- data.frame(Actual = actual, Predicted = predictions)
+
+# Plot the predicted values vs actual values
+plots[["Harris"]]<-ggplot(results_df, aes(x = predictions, y = actual)) +
+  geom_point(color = "blue") + # Scatter plot of predicted vs actual values
+  labs(x = "Predicted Values", y = "Actual Values", title = "Comparison of Predicted and Actual Values") +
+  geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed") + # Add reference line y = x
+  theme_minimal() # Use minimal theme for the plot
 
 
+# Generate predictions using the model
+predictions_1 <- predict(Trump_model, newdata = test_Trump)
+
+actual_1 <- test_Trump$score
+
+results_df_1 <- data.frame(Actual = actual_1, Predicted = predictions_1)
+
+# Plot the predicted values vs actual values
+plots[["Trump"]] <-ggplot(results_df_1, aes(x = predictions_1, y = actual_1)) +
+  geom_point(color = "blue") + # Scatter plot of predicted vs actual values
+  labs(x = "Predicted Values", y = "Actual Values", title = "Comparison of Predicted and Actual Values") +
+  geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed") + # Add reference line y = x
+  theme_minimal() # Use minimal theme for the plot
+
+### Combine and Print Plots ###
+# Combine all individual plots into one using patchwork with 2 columns and 4 rows
+combined_plot <- wrap_plots(plots, ncol = 1, nrow = 2, heights = unit(rep(4, 8), "in")) +
+  plot_annotation(
+    theme = theme(
+      plot.title = element_text(hjust = 0.5, size = 14)
+    )
+  )
+# Print the combined plot
+print(combined_plot)
 
 
+```
 
+# Result
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#select significant values based on variable type of each candidate
+
+# Define the function to select feature values based on variable type
+select_feature_value <- function(data, candidate_name) {
+  feature_values <- list()
+  for (col_name in names(data)) {
+    col_data <- data[[col_name]]
+    # Numeric variables: Choose mean or median based on skewness
+    if (is.numeric(col_data)) {
+      # Check if there are enough valid values to compute skewness
+      if (sum(!is.na(col_data)) > 1) {  # Ensure there is more than one valid value
+        skew_val <- skewness(col_data, na.rm = TRUE)
+        if (!is.na(skew_val) && skew_val < 1) {
+          feature_values[[col_name]] <- mean(col_data, na.rm = TRUE)
+        } else {
+          feature_values[[col_name]] <- median(col_data, na.rm = TRUE)
+        }
+      } else {
+        # Default to median if skewness cannot be computed
+        feature_values[[col_name]] <- median(col_data, na.rm = TRUE)
+      }
+    }
+    
+    # Categorical variables: Choose mode (most frequent value)
+    else if (is.character(col_data)) {
+      feature_values[[col_name]] <- Mode(col_data)
+    }
+    
+    # Boolean variables: Choose TRUE or FALSE based on which one appears more frequently
+    else if (is.logical(col_data)) {
+      true_count <- sum(col_data, na.rm = TRUE)
+      false_count <- sum(!col_data, na.rm = TRUE)
+      feature_values[[col_name]] <- if (true_count >= false_count) TRUE else FALSE
+    }
+  }
+  # Add the candidate name to the results
+  feature_values[["Candidate"]] <- candidate_name
+  return(feature_values)
+}
+
+# Define a function to calculate the mode (most frequent value)
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+# Calculate feature values for each candidate
+trump_features <- select_feature_value(full_Trump, "Donald Trump")
+harris_features <- select_feature_value(full_Harris, "Kamala Harris")
+
+# Combine results into a single data frame for easy viewing
+all_candidate_features <- bind_rows(trump_features, harris_features)
+
+# Display the final table of feature values
+print(all_candidate_features)
+
+```
+
+```{r}
+Harris_predict<- round(predict(Harris_model, newdata = harris_features),2)
+Trump_predict <- round(predict(Trump_model, newdata = trump_features),2)
+Harris_predict
+Trump_predict
+```
+
+# Discussion
 
 
 

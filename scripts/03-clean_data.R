@@ -101,6 +101,7 @@ for (candidate in candidates) {
 for (file in c("Trump_cleaned_data.parquet", "Harris_cleaned_data.parquet")) {
   # Read the Parquet file into a data frame
   df <- read_parquet(file.path("data/03-cleaned_data/", file))
+  write_parquet(df, file.path("data/02-analysis_data/00-full", paste0("full_", gsub("_cleaned_data", "", file))))
   # Split the data into 3:7 ratio
   sample_indices <- sample(seq_len(nrow(df)), size = floor(0.3 * nrow(df)))
   df_3 <- df[sample_indices, ]
