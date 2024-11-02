@@ -458,25 +458,8 @@ After finalizing the variables, we first created a new variable named 'duration'
 
 Subsequently, we handled the missing values by imputing numerical variables with their mean values and categorical variables with their mode. Since our results are not exact percentages, we used 'score' to name what would typically be called 'pct'. We then finalize and tidy up the variable names.
 
-Next, we extracted the data for each candidate individually. We calculated a weighted score by weighting according to the number of times each candidate was mentioned in the polls. After comparison, we observed that the top three candidates—Trump, Harris, and Biden—had significantly higher scores than the remaining candidates. Given that Biden has withdrawn from the race, we are now focusing only on the datasets for Trump and Harris for further analysis. The specific weighted scores for the top five candidates are as follows:
-```{r}
-#| warning: false
-#| message: false
-#| echo: false
-#| label: tbl-t5c
-#| tbl-cap: "Top 5 Candidates"
-# Find the top 5 candidates.
-candidate_ranking <- raw_data %>%
-  group_by(candidate_name) %>%
-  summarize(
-    poll_count = n(),                    
-    avg_weighted_pct = mean(poll_count * pct, na.rm = TRUE)  
-  ) %>%
-  arrange(desc(avg_weighted_pct)) %>%    
-  slice_head(n = 5)                       
-kable(candidate_ranking, col.names = c("candidate", "number of polls", "weighted score"))
-  
-```
+Next, we extracted the data for each candidate individually. We calculated a weighted score by weighting according to the number of times each candidate was mentioned in the polls. After comparison, we observed that the top three candidates—Trump, Harris, and Biden—had significantly higher scores than the remaining candidates. Given that Biden has withdrawn from the race, we are now focusing only on the datasets for Trump and Harris for further analysis. 
+
 Next, we split the data for Trump and Harris into a training set (70%) and a test set (30%). These four datasets form our analysis data. Below is a portion of the Trump training set for reference:
 ```{r}
 #| warning: false
@@ -500,16 +483,16 @@ Score_{Harris} = &\alpha_1Pollscore + \alpha_2Transparency\_score + \alpha_3Dura
         &\alpha_4Sample\_size + \alpha_5Population + \alpha_6Hypothetical + \alpha_0 \notag
 \end{align}
 
-值得注意的是我们使用的是Multiple linear regression (MLR), 意味着我们的假设：
-1. 多元线性回归的核心前提是因变量（结果变量）与自变量之间存在线性关系。可以通过散点图直观检查这种线性关系，理想情况下应显示出直线关系而非曲线关系。
-2. 残差（观测值与预测值之间的差异）呈正态分布。可以通过观察Q-Q 图来评估这一假设。
-3. 自变量之间的相关性不过高，即避免多重共线性。这可以通过方差膨胀因子（VIF）来检测。
-4. 同方差性：误差项（残差）的方差应在自变量的所有水平上保持一致。残差与预测值的散点图不应显示出明显的模式。
+Notably, we used Multiple Linear Regression (MLR), which implies the following assumptions:
 
-此外，在我们的模型中，duration变量是原数据中“start_date” 和 “end_date” 的差值，这意味着我们的模型无法解释时间序列对结果带来的影响。但是考虑到这两者之间存在的线性关系，我们不得已将其简化，以满足使用MLR的假设。
+The core assumption of multiple linear regression is that there is a linear relationship between the dependent variable (outcome) and the independent variables. This linear relationship can be visually checked using scatter plots, which ideally should display a straight-line pattern rather than a curve.
+The residuals (the differences between observed and predicted values) should be normally distributed. This assumption can be assessed by examining a Q-Q plot.
+The correlation between independent variables should not be too high, meaning multicollinearity should be avoided. This can be checked using the Variance Inflation Factor (VIF).
+Homoscedasticity: The variance of the error terms (residuals) should be consistent across all levels of the independent variables. Residuals plotted against predicted values should not display any obvious pattern.
+Furthermore, in our model, the variable "duration" is derived from the difference between "start_date" and "end_date" in the original data. This means our model cannot account for the effects brought by time series, but considering the linear relationship between these two, we simplified it to meet the assumptions of using MLR.
 
-另外，原数据中methodology有51种不同的总类。categorical variable 过多的种类会增加我们模型的复杂度，因此我们将其简化为了4个level。
-其中level 1 代表该种methodology的可靠性最低，level 4 代表该种methodology的可靠性最高。具体的分类如下：
+Additionally, there are 51 different categories for the "methodology" variable in the original dataset. Having too many categories for a categorical variable would increase the complexity of our model, so we simplified it into four levels. Level 1 represents the lowest reliability of the methodology, while level 4 represents the highest. The specific classifications are as follows:
+
 ```{r}
 #| warning: false
 #| message: false
@@ -533,16 +516,51 @@ kable(methodology_summary, col.names = c("Level", "Methodologies")) %>%
   column_spec(1, width = "1.5cm") %>% # Adjust the width of the first column
   column_spec(2, width = "13cm")
 ```
-这样分的原因是：。。。。。。。。。。。。。。。
+The different methodologies were evaluated based on reliability scores ranging from 1 to 10. The scores of 51 combinations were calculated by averaging the individual scores of each methodology in the combination. The results were classified into four levels: high reliability (8.5-10), medium-high reliability (7-8.49), medium reliability (5-6.99), and low reliability (below 5). Methodologies were scored based on several criteria, including statistical rigor, representativeness, response rate, interaction quality, and cost efficiency. High-scoring methodologies, such as those employing strict statistical sampling methods like Probability Panels or those using Live Phone surveys with broad coverage and low refusal rates, received high scores due to their strong representativeness and reliability. Medium-high scoring methodologies included Online Panels, which offer good coverage and low cost but are susceptible to self-selection bias, and Text-to-Web methods, which improve response rates but may have limited representativeness depending on the target demographics. Medium-scoring methodologies, such as App Panels and IVR (Interactive Voice Response), tend to lack broad representativeness or have limitations in interaction quality, making them suitable for niche audiences but not generalizable to a wider population. Low-scoring methodologies, including Email Surveys and methods relying on Online Ads, often suffer from low response rates and significant selection bias, which negatively impact their reliability. These scoring criteria ensure that the methodologies are evaluated in a consistent manner, with higher scores reflecting stronger statistical foundations, broader representativeness, and better data quality.
 
-此外，之所以我们只对川普和哈里斯的数据进行比较，预测他们之间谁会竞选成功。是因为我们通过比较所有候选人的加权竞争力得分后发现，前三名：川普，哈里斯，以及拜登与其余候选人差距非常大。@tbl-t5c可以看出其中第三名哈里斯的加权竞争力得分是109501.54是第四名的18822.81分的5.8倍之多。考虑到拜登以及推出参选，我们最后决定只对竞争力最大的川普和哈里斯进行预测。具体加权公式如下：
+Additionally, the reason we only compared the data of Trump and Harris to predict which of them would win the election is that, after comparing the weighted competitiveness scores of all candidates, we found that the top three — Trump, Harris, and Biden — had significantly higher scores than the others. As shown in @tbl-t5c, the third-place candidate, Harris, had a weighted competitiveness score of 180714535, which is 5.15 times higher than the fourth-place score of 34987031. Considering that Biden has withdrawn from the race, we ultimately decided to only predict between the most competitive candidates, Trump and Harris. The specific weighting formula is as follows:
 
+\begin{align}
+& weighted\_score  = \frac{ {\textstyle \sum_{i  = 1}^{n}score_i} }{n}\times {\textstyle \sum_{i  = 1}^{n}Sample\_Size_i} \\
+& \text{Where: }\notag\\
+&\hspace{1cm}n\text{ represents the number of polls nominating this candidate.}\notag\\
+&\hspace{1cm}Score_i\text{ represents the score obtained by the candidate in the } i^{th}\text{ poll.}\notag\\
+&\hspace{1cm}Sample\_Size_i\text{ represents the sample size of the } i^{th}\text{ poll.}\notag
+\end{align}
 
+```{r}
+# Define the directory path containing the parquet files
+p <- "data/03-cleaned_data"
+parquet_files <- list.files(path = here::here(p), full.names = TRUE)
 
+# Initialize an empty dataframe to store the weighted score for each file
+weighted_scores <- data.frame(Candidate = character(), Weighted_Score = numeric(), stringsAsFactors = FALSE)
 
-weighted\_score =  \frac{ {\textstyle \sum_{i=1}^{n}score_i} }{n}\times \frac{ {\textstyle \sum_{i=1}^{n}Sample\_Size_i} }{n}  
+# Iterate over each parquet file
+for (file in parquet_files) {
+  # Read the parquet file
+  df <- read_parquet(here::here(file))
+  
+  # Calculate the mean of score and sample_size
+  score_mean <- mean(df$score, na.rm = TRUE)
+  sample_size_mean <- mean(df$sample_size, na.rm = TRUE)
+  
+  # Calculate the weighted score (multiply by total number of rows)
+  weighted_score <- score_mean * sample_size_mean * nrow(df)
+  
+  # Append the result to the weighted_scores dataframe
+  weighted_scores <- rbind(weighted_scores, data.frame(Candidate = sub('_cleaned_data.parquet$', '', basename(file)), Weighted_Score = weighted_score))
+}
 
+# Get the top 5 weighted scores
+top_5_weighted_scores <- weighted_scores %>% 
+  arrange(desc(Weighted_Score)) %>% 
+  head(5)
 
+# Print the top 5 weighted scores using kable
+top_5_weighted_scores %>% kable()
+
+```
 
 
 ```{r}
@@ -810,10 +828,13 @@ print(combined_plot)
 ```
 
 # Result
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-#select significant values based on variable type of each candidate
+## featured values used in prediction
 
-# Define the function to select feature values based on variable type
+In our analysis, we designated specific poll-related features as "featured values" to serve as representative indicators within each candidate's dataset. These featured values were chosen to highlight the most impactful aspects of the polling data that consistently influenced the support scores for Donald Trump and Kamala Harris. By selecting these representative values, we aimed to streamline the analysis and focus on the factors that most strongly characterized each candidate’s data.
+
+We selected representative feature values for each candidate's dataset by processing each variable based on its type. For numeric variables (e.g., numeric_grade, pollscore, transparency_score, duration, sample_size), we determined whether to use the mean or median by evaluating skewness; variables with low skewness used the mean, while more skewed variables used the median to represent typical values. Categorical variables (e.g., methodology, population) were represented by the most frequent category, while Boolean variables (e.g., ranked_choice_reallocated, hypothetical) were set to TRUE or FALSE based on the most common value. This approach allowed us to capture the key characteristics of each candidate's data in a summarized form.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 select_feature_value <- function(data, candidate_name) {
   feature_values <- list()
   for (col_name in names(data)) {
@@ -861,25 +882,46 @@ Mode <- function(x) {
 trump_features <- select_feature_value(full_Trump, "Donald Trump")
 harris_features <- select_feature_value(full_Harris, "Kamala Harris")
 
-# Combine results into a single data frame for easy viewing
-all_candidate_features <- bind_rows(trump_features, harris_features)
+# Round numeric columns to two decimal places before pivoting
+all_candidate_features <- all_candidate_features %>%
+  mutate(across(everything(), as.character))  # Convert all columns to character for compatibility in pivot_longer
 
-# Display the final table of feature values
-print(all_candidate_features)
+# Pivot the data to create a vertically aligned table with candidate names in the first row
+all_candidate_features_long <- all_candidate_features %>%
+  pivot_longer(cols = -Candidate, names_to = "Variable", values_to = "Value") %>%
+  pivot_wider(names_from = Candidate, values_from = Value)
+
+# Display the final table with kable
+kable(all_candidate_features_long, caption = "Featured Values for Each Candidate")
+
 
 ```
+## Prediction result of the linear model
 
-```{r}
-Harris_predict<- round(predict(Harris_model, newdata = harris_features),2)
-Trump_predict <- round(predict(Trump_model, newdata = trump_features),2)
-Harris_predict
-Trump_predict
+Using the selected feature values for each candidate, we applied our trained predictive models to estimate the support levels for Kamala Harris and Donald Trump. The bar plot above illustrates the predicted values derived from our analysis. According to the model, Kamala Harris has a predicted support value of approximately 47.65, while Donald Trump is predicted to receive a support value of around 43.51. These predictions suggest an advantage for Kamala Harris over Donald Trump in terms of expected support within the context of the data used.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Store predictions in a data frame
+predictions <- data.frame(
+  Candidate = c("Kamala Harris", "Donald Trump"),
+  Prediction = c(Harris_predict, Trump_predict)
+)
+
+# Create the bar plot
+ggplot(predictions, aes(x = Candidate, y = Prediction, fill = Candidate)) +
+  geom_bar(stat = "identity", width = 0.5) +
+  labs(title = "Predicted Values for Each Candidate",
+       x = "Candidate",
+       y = "Prediction") +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_text(aes(label = Prediction), vjust = -0.3)
 ```
+## Conclusion
+
+Overall, our approach demonstrates how feature engineering and predictive modeling can offer insights into candidate support based on the available data. However, it is important to interpret these results cautiously, as they rely on specific variables and assumptions embedded within the dataset. In this analysis, we aggregated representative feature values for each candidate by using the mean or median for numeric variables, the mode for categorical variables, and the most frequent occurrence for Boolean values. Further refinement and additional data could enhance the robustness of these predictions, contributing to a more comprehensive forecast in future studies.
 
 # Discussion
-
-
-
 
 
 
