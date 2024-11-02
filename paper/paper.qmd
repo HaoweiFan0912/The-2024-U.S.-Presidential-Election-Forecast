@@ -27,6 +27,7 @@ library(car)
 library(kableExtra)
 library(gridExtra)
 library(moments)
+library(grid)
 set.seed(912)
 #### Read data ####
 raw_data <- read_csv(here::here("data/01-raw_data/raw_data.csv"))
@@ -41,10 +42,25 @@ Harris_model <- readRDS(here::here("models/Harris_model.rds"))
 ```
 
 # Introduction
+The U.S. presidential election is a globally significant event, drawing substantial international attention due to its potential impact on economies, international relations, and pressing social issues, including climate change and human rights.  As the world anticipates the 2024 U.S. electoral contest, forecasting the possible outcomes can provide critical insights for policymakers, businesses, and civil society groups. Predicting election outcomes has long been one of the most challenging tasks for political scientists, statisticians, and analysts. This study aims to predict the level of support for leading candidates, specifically Kamala Harris and Donald Trump, using aggregated poll data and statistical modeling.
+
+To provide a robust prediction, we utilize a "poll-of-polls" approach, combining polling data from multiple organizations at both national and state levels to enhance accuracy and stability in forecasted support. Our analysis applies a multilinear regression model, focusing on key variables like pollster reliability, sample size, and duration, which contribute to the prediction of each candidate's support level. we aim to predict the percentage of support for the main candidates Kamala Harris and Donald Trump.
+
+The results of our linear model indicate closely matched levels of voter support for both candidates. Donald Trump’s predicted support is approximately 45.2%, while Kamala Harris's predicted support is slightly higher at 45.9%. These findings suggest that, while both candidates maintain stable support, Harris holds a slight advantage. The consistency across both models underlines the importance of accounting for variability in polling methodologies and regional voter bases. 【等result出来再改】
+
+This study is important because it not only forecasts the immediate electoral outcomes but also provides critical insights into the potential global impact of the U.S. presidential election. Predicting election results helps global stakeholders—such as policymakers, investors, and international organizations—prepare for possible changes in U.S. policy, which could significantly affect trade, climate commitments, and foreign relations, thereby influencing global economic stability and strategic alliances. Furthermore, our findings highlight the need for transparency in polling methodologies and emphasize the importance of developing more precise and comprehensive forecasts.
+
+This paper is organized as follows: The next section outlines the data collection and filtering processes, detailing the key variables and sources. Following that, we discuss our methodological framework, including the construction of the linear and Bayesian models. In the results section, we present the outcomes of both models, and a discussion explores the broader implications of these findings. Finally, the paper concludes with recommendations for future research and potential applications of these forecasting models in electoral studies. 【最后改结构描述加cross-reference】
+
 
 # Data {#sec-data}
 
 ## Overview
+The dataset comes from FiveThirtyEight's 'Presidential Election Polls (Current Cycle)' (Ryan Best and Wiederkehr, 2024). FiveThirtyEight is a well-known website recognized for its political, economic, and sports analyses. Its polling aggregation methodology is highly regarded in the field, aiming to provide readers with transparent, scientific, and as accurate as possible predictions. This polling data is compiled from various polling agencies, encompassing a wide range of demographic information, which serves as an essential basis for analyzing public voting preferences in the upcoming presidential election.
+
+The analysis and visualizations in this paper are based on polling results as of October 22. The dataset includes 52 variables and 17,133 samples from various polling sources, asking participants who they support in the upcoming presidential election. To ensure accuracy and consistency, the data has been carefully processed and cleaned to remove biases and guarantee data integrity and comparability.
+
+This project leverages several R packages, including tidyverse[@tidyverse], rstanarm[@rstanarm], testthat[@testthat], readr[@readr], broom[@broom], ggplot2[@ggplot2], and posterior[@posterior], to clean, analyze, and visualize polling data for the 2024 U.S. presidential election forecast. These packages facilitate a reproducible approach to data handling, statistical modeling, and result presentation in this study.
 
 ## Raw data
 Raw data 一共包含了52个variable以及17133个sample.
@@ -284,8 +300,8 @@ for (variable in names(numer %>% select(numeric_grade, pollscore, transparency_s
     theme_minimal(base_size = 30) +
     theme(
       plot.title = element_text(hjust = 0.5, size = 12),
-      axis.title = element_text(size = 10),
-      axis.text = element_text(size = 10)
+      axis.title = element_text(size = 20),
+      axis.text = element_text(size = 20)
     )
 }
 ### Combine and Print Plots ###
@@ -470,6 +486,14 @@ Next, we split the data for Trump and Harris into a training set (70%) and a tes
 kable(head(train_Trump), col.names = names(train_Trump))
 ```
 ## Measurement
+The method used to forecast the presidential election results is the poll-of-polls, which aggregates results from multiple polls instead of relying on a single survey, aiming to make the results more accurate and stable. In this method, each poll is assigned a weight based on factors such as sample size, recency, and the pollster’s historical accuracy. 
+
+The dataset used for this prediction is from FiveThirtyEight, which includes scientifically sound public polls that meet methodological standards. Polling organizations are rated based on accuracy, transparency, and sample quality, represented by a numeric_grade (ranging from 0.5 to 3.0). Higher scores indicate greater reliability. The histogram of numeric_grade values shows a concentration around scores of 2 and 3, suggesting most pollsters are of moderate to good quality.
+
+Polling organizations use different survey methods but follow similar principles. They select representative samples, publish surveys through chosen platforms, and aim to ask clear, unbiased questions. YouGov, discussed in the appendix, is one such example.
+
+Survey data accuracy is limited by several factors. Sampling bias can lead to an unrepresentative sample, underrepresenting certain demographics. Response bias may occur if participants are not truthful or are influenced by question phrasing. Platform differences also impact reliability, as social media polls may attract different audiences compared to phone or in-person surveys. Pollscore and numeric grade filters help ensure quality, but they are based on historical data and may not reflect current survey quality. Additionally, the rapidly changing political narrative and voter sentiment during campaigns can affect polling accuracy. These factors contribute to inaccuracies in survey results, affecting the reliability of aggregated data.
+
 
 ## Similar dataset
 
@@ -604,17 +628,34 @@ summary_stats %>%
 
 ```
 
-```{r}
+```{r, fig.pos="H", fig.height=30, fig.width=60}
 #| warning: false
 #| message: false
 #| echo: false
+#| label: fig-dositd
+#| fig-cap: "Distribution of scores in training dataset"
+
+plots <- list()
 # Plot a histogram for the 'pct' variable
-ggplot(train_Trump, aes(x = score)) +
+plots[["Trump"]]<-ggplot(train_Trump, aes(x = score)) +
   geom_histogram(binwidth = 2, fill = "blue", color = "black", alpha = 0.7) +
   labs(title = "Histogram of pct", x = "pct", y = "Frequency")
-ggplot(train_Harris, aes(x = score)) +
+plots[["Harris"]]<-ggplot(train_Harris, aes(x = score)) +
   geom_histogram(binwidth = 2, fill = "blue", color = "black", alpha = 0.7) +
   labs(title = "Histogram of pct", x = "pct", y = "Frequency")
+
+
+### Combine and Print Plots ###
+# Combine all individual plots into one using patchwork with 2 columns and 4 rows
+combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(20, 20), "in")) +
+  plot_annotation(
+    theme = theme(
+      plot.title = element_text(hjust = 0.5, size = 14)
+    )
+  )
+# Print the combined plot
+print(combined_plot)
+
 ```
 
 
@@ -658,12 +699,16 @@ Harris_model_0 <- lm(
 ```
 
 因为我们考虑到numeric_grade和pollscore之间有强线性相关，我们舍弃了这一方案。
-```{r}
+```{r, fig.pos="H", fig.height=10, fig.width=10}
 #| warning: false
 #| message: false
 #| echo: false
+#| label: fig-rbnap
+#| fig-cap: "Relationship between numeric_grade and pollscore"
+
+plots <- list()
 # Plot relationship between numeric_grade and pollscore for train_Trump
-ggplot(train_Trump, aes(x = numeric_grade, y = pollscore)) +
+plots[["Trump"]]<-ggplot(train_Trump, aes(x = numeric_grade, y = pollscore)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, color = "blue") +
   labs(title = "Relationship between Numeric Grade and Pollscore (train_Trump)",
@@ -671,12 +716,25 @@ ggplot(train_Trump, aes(x = numeric_grade, y = pollscore)) +
        y = "Pollscore")
 
 # Plot relationship between numeric_grade and pollscore for train_Harris
-ggplot(train_Harris, aes(x = numeric_grade, y = pollscore)) +
+plots[["Harris"]]<-ggplot(train_Harris, aes(x = numeric_grade, y = pollscore)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, color = "red") +
   labs(title = "Relationship between Numeric Grade and Pollscore (train_Harris)",
        x = "Numeric Grade",
        y = "Pollscore")
+
+### Combine and Print Plots ###
+# Combine all individual plots into one using patchwork with 2 columns and 4 rows
+combined_plot <- wrap_plots(plots, ncol = 1, nrow = 2, heights = unit(rep(4, 10), "in")) +
+  plot_annotation(
+    theme = theme(
+      plot.title = element_text(hjust = 0.5, size = 14)
+    )
+  )
+# Print the combined plot
+print(combined_plot)
+
+
 ```
 
 
@@ -695,10 +753,12 @@ Harris_model_1 <- lm(
     methodology, data = train_Harris)
 ```
 
-```{r}
+```{r, fig.height=100,fig.width=100}
 #| warning: false
 #| message: false
 #| echo: false
+#| label: tbl-alovitahm
+#| tbl-cap: "Significant level of variblaes in the aboanded Harris's model"
 # Get the summary of the model
 Harris_summary <- summary(Harris_model_1)
 # Extract coefficients from the summary
@@ -710,7 +770,19 @@ Harris_results_table <- data.frame(
   Variable = rownames(coefficients),
   P_Value = format(Harris_p_values, scientific = TRUE)
 )
-Harris_kable <- kable(Harris_results_table[, 2, drop = FALSE], caption = "Harris", col.names = c("Variable", "P-value"))
+Harris_kable <- kable(Harris_results_table[, 2, drop = FALSE], caption = "Model for Harris", col.names = c("Variable", "P-value"))
+
+Harris_kable
+
+```
+
+```{r, fig.height=100,fig.width=100}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-alovitatm
+#| tbl-cap: "Significant level of variblaes in the aboanded Trump's model"
+
 # Get the summary of the model
 Trump_summary <- summary(Trump_model_1)
 # Extract coefficients from the summary
@@ -722,27 +794,17 @@ Trump_results_table <- data.frame(
   Variable = rownames(coefficients),
   P_Value = format(Trump_p_values, scientific = TRUE)
 )
-Trump_kable <- kable(Trump_results_table[, 2, drop = FALSE], caption = "Trump", col.names = c("Variable", "P-value"))
+Trump_kable <- kable(Trump_results_table[, 2, drop = FALSE], caption = "Model for Trump", col.names = c("Variable", "P-value"))
 
-grid.arrange(tableGrob(Trump_kable), tableGrob(Harris_kable), nrow = 1)
-
-
+Trump_kable
 ```
+
+
+
+
 
 因此，我们有有了最后的模型。
-```{r}
-#| warning: false
-#| message: false
-#| echo: false
-"
-Trump_model <- lm(
-  score ~ pollscore + transparency_score + duration + sample_size + population + hypothetical, data = train_Trump)
-Harris_model <- lm(
-  score ~ pollscore + transparency_score + duration + sample_size + population + hypothetical, data = train_Harris)
-"
-summary(Trump_model)
-summary(Harris_model)
-```
+
 
 
 
@@ -752,9 +814,66 @@ summary(Harris_model)
 #| warning: false
 #| message: false
 #| echo: false
-vif(Trump_model)
-vif(Harris_model)
+#| label: tbl-vohfm
+#| tbl-cap: "VIF of Harris's final model"
+# Add a column for variable names (convert row names to a column)
+
+harris_vif <- vif(Harris_model)
+
+# 将 VIF 结果转换为数据框
+# 如果是 GVIF（针对多分类变量），则处理为数据框
+
+harris_vif_df <- as.data.frame(harris_vif)
+
+
+
+harris_vif_df$Variable <- rownames(harris_vif_df)
+
+# Rearrange columns so that the variable name column is the first column
+
+harris_vif_df <- harris_vif_df[, c(ncol(harris_vif_df), 1:(ncol(harris_vif_df)-1))]
+
+# Use kable to create a formatted table from VIF results
+
+kable(harris_vif_df[, 2, drop = FALSE], format = "html", caption = "VIF for Harris Model")
+
+
+
 ```
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-votfm
+#| tbl-cap: "VIF of Trump's final model"
+
+trump_vif <- vif(Trump_model)
+
+
+# 将 VIF 结果转换为数据框
+# 如果是 GVIF（针对多分类变量），则处理为数据框
+trump_vif_df <- as.data.frame(trump_vif)
+
+# Add a column for variable names (convert row names to a column)
+trump_vif_df$Variable <- rownames(trump_vif_df)
+
+
+# Rearrange columns so that the variable name column is the first column
+trump_vif_df <- trump_vif_df[, c(ncol(trump_vif_df), 1:(ncol(trump_vif_df)-1))]
+
+# Use kable to create a formatted table from VIF results
+
+kable(harris_vif_df[, 2, drop = FALSE], format = "html", caption = "VIF for Harris Model")
+
+```
+
+
+
+
+
+
+
 
 ```{r}
 #| warning: false
@@ -826,6 +945,12 @@ In our analysis, we designated specific poll-related features as "featured value
 We selected representative feature values for each candidate's dataset by processing each variable based on its type. For numeric variables (e.g., numeric_grade, pollscore, transparency_score, duration, sample_size), we determined whether to use the mean or median by evaluating skewness; variables with low skewness used the mean, while more skewed variables used the median to represent typical values. Categorical variables (e.g., methodology, population) were represented by the most frequent category, while Boolean variables (e.g., ranked_choice_reallocated, hypothetical) were set to TRUE or FALSE based on the most common value. This approach allowed us to capture the key characteristics of each candidate's data in a summarized form.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-dffp
+#| tbl-cap: "Datas for final prediction"
+
 select_feature_value <- function(data, candidate_name) {
   feature_values <- list()
   for (col_name in names(data)) {
@@ -923,6 +1048,245 @@ ggplot(predictions, aes(x = Candidate, y = Prediction, fill = Candidate)) +
 Overall, our approach demonstrates how feature engineering and predictive modeling can offer insights into candidate support based on the available data. However, it is important to interpret these results cautiously, as they rely on specific variables and assumptions embedded within the dataset. In this analysis, we aggregated representative feature values for each candidate by using the mean or median for numeric variables, the mode for categorical variables, and the most frequent occurrence for Boolean values. Further refinement and additional data could enhance the robustness of these predictions, contributing to a more comprehensive forecast in future studies.
 
 # Discussion
+
+
+# Appendix
+
+## Analysis of YouGov Pollster Methodology
+
+In this appendix, we provide a deep-dive analysis of the methodology employed by YouGov, one of the pollsters included in our sample. YouGov is an international online research data and analytics technology group. It is a leading platform for online survey, which has a continuously growing dataset of over 27 million registered members. This pollster has a 3.0 grade according to FiveThirtyEight, which is the highest score. This analysis covers key aspects of YouGov's survey methodology, highlighting its strengths, weaknesses, and the unique features of its approach.
+
+### Population, Frame, and Sample
+
+YouGov utilizes an online panel to collect survey responses, with participants drawn from a broad population base, which typically comprises all U.S. adults citizens. Respondents are chosen based on a non-probability sampling, which means not everyone in the population has an equal chance of being selected. However, the sample is adjusted using statistical weighting to better represent the target population. The sampling frame consists of individuals who have signed up to participate in surveys, representing a range of demographic characteristics. However, as an online panel, there may be limitations regarding coverage bias, particularly for individuals with limited internet access.
+
+### Sample Recruitment
+
+YouGov recruits participants through online advertisements and other digital marketing techniques,  with surveys offers surveys in multiple languages. The recruitment process is designed to ensure that the panel is as representative as possible. For instance, YouGov collects information such as email addresses and IP addresses when new members join the panel. Additionally, YouGov monitors survey completion time and answer consistency to ensure the data is accurate. Respondents who fail quality checks are removed.
+
+### Sampling Approach and Trade-offs
+
+YouGov employs a form of quota sampling combined with weighting adjustments to make the sample representative of the target population. To ensure representativeness, YouGov selects respondents based on key demographic characteristics such as age, gender, race, education, and voting behavior. These characteristics are used to set quotas, and the sample is adjusted with statistical weighting to align with the distribution of these characteristics in the target population. For example, if a particular demographic group is underrepresented in the sample, their responses are given greater weight to correct the imbalance. One trade-off of this method is that, although it helps improve representativeness, it may not fully eliminate selection bias due to the reliance on an online panel, which can lead to overrepresentation or underrepresentation of certain groups. Additionally, the process of weighting adjustments may introduce additional errors if the weights are inaccurate or if certain groups are given disproportionately high weights, leading to increased variability and potential bias in the final results.
+
+### Handling Non-response
+
+Non-response is managed by using statistical weighting to adjust the sample to more closely reflect the demographic makeup of the target population. While this helps mitigate some of the biases associated with non-response, it cannot fully account for differences between respondents and non-respondents, especially when non-response is correlated with key survey variables.
+
+### Strengths and Weaknesses of the Questionnaire
+
+The YouGov questionnaire is well-designed to capture a wide range of attitudes and behaviors. The use of standardized questions ensures consistency across surveys, allowing for longitudinal analysis. However, as an online survey, there is the risk of respondents providing socially desirable answers or rushing through the survey without providing thoughtful responses. Additionally, the format may limit the depth of responses compared to in-person interviews.
+
+Overall, YouGov's methodology provides a cost-effective and timely approach to data collection, particularly useful for understanding trends across large populations. However, the use of an online panel introduces certain limitations that must be acknowledged when interpreting the results.
+
+## Ideal Methodology and Survey for Predicting the U.S. Presidential Election
+
+### Budget Overview
+With a budget of $100,000, the goal is to design an efficient and representative method for predicting the U.S. presidential election. This methodology will include sampling strategies, respondent recruitment, data validation, poll aggregation, and survey implementation details.
+
+### Sampling Methodology
+A stratified sampling approach will be used to ensure diversity and representation. The population will be divided into relevant strata such as age, gender, geographic region, race, and political affiliation. This approach ensures that each subgroup is adequately represented, thereby reducing sampling bias.
+
+### Respondent Recruitment
+Respondents will be recruited through online panels. Partnerships with established survey platforms and third-party providers will help reach a broad and representative group of participants, such as through platforms like Instagram, YouTube, and various news websites. Small monetary compensation or gift cards will be offered as incentives to encourage participation. Additional incentives will be provided to underrepresented groups, such as individuals with lower educational attainment or residents of rural areas, to ensure more inclusive recruitment. The aim is for a sample size of approximately 10,000 respondents, which would achieve a margin of error of ±1% at a 95% confidence level.
+
+### Data Validation
+Data validation will involve cross-referencing respondent demographic information with census data to confirm representativeness. Additionally, responses will be reviewed for accuracy, and suspicious or incomplete answers will be flagged for further inspection. Responses completed too quickly or that include repeated answers such as "prefer not to say" or "other" will be discarded. IP addresses will be tracked to prevent duplicate submissions.
+
+### Poll Aggregation and Methodology Features
+Once all responses are collected, weights will be applied according to electoral demographics and voter turnout to ensure the sample represents the U.S. population. Poll aggregation will also involve adjustments for known biases, such as overreporting in certain demographic groups or historical voting trends. Bayesian updating will be used to refine predictions continuously as more data becomes available.
+
+### Survey Implementation
+The survey will be implemented using Google Forms, which allows for easy distribution and data collection. The survey will include questions related to voter preferences, key issues, and demographic information. Questions will be designed to minimize leading language and provide a range of response options to avoid bias. Keeping the survey brief (approximately 5 minutes with 12 questions) will help maintain respondent focus.
+
+### Budget Allocation
+- $60K for Recruitment Costs and Survey Platform Fees, including advertising
+- $10K for respondent incentives
+- $20K for data processing, weighting, and modeling
+- $10K for data security and administrative costs
+
+### Survey Link and Copy
+The Google Forms survey link will be included here: https://docs.google.com/forms/d/e/1FAIpQLSdcd_neJf83lJMZGzmcUcPkDd-R1vPk98gPIDsD4KC_X6T8tQ/viewform. 
+
+The survey questions are listed below: 
+1. **What is your age group?** 
+   - 18-24
+   - 25-34
+   - 35-44
+   - 45-54
+   - 55+
+
+2. **What is your gender?**
+   - Male
+   - Female
+   - Non-binary
+   - Prefer not to say
+
+3. **What is your ethnicity?**
+   - White
+   - Black or African American
+   - Asian
+   - Hispanic or Latino
+   - Native American or Alaska Native
+   - Two or more races
+   - Other
+   - Prefer not to say
+
+4. **In which state do you currently reside?** *(Open-ended response)*
+
+5. **What is your highest level of education completed?**
+   - High school
+   - Associate degree
+   - Bachelor's degree
+   - Other/Prefer not to say
+
+6. **What is your political affiliation?**
+   - Democrat
+   - Republican
+   - Independent
+   - Other/Prefer not to say
+
+7. **How likely are you to vote in the upcoming presidential election?** *(Scale of 1-5)*
+
+8. **Which candidate do you currently support for president?**
+   - Kamala Harris
+   - Donald Trump
+   - Other
+
+9. **What is the most important issue to you in the upcoming election?**
+   - Economy
+   - Healthcare
+   - Education
+   - Climate change
+   - Other/Prefer not to say
+
+10. **What do you consider your economic status?**
+    - Lower class
+    - Lower-middle class
+    - Middle class
+    - Upper-middle class
+    - Upper class
+    - Prefer not to say
+
+11. **How would you describe your household's financial situation compared to last year?**
+    - Better
+    - Worse
+    - About the same
+    - Prefer not to say
+
+12. **How satisfied are you with the current administration's handling of key issues?** *(Scale of 1-5)*
+
+## Raw data full descriptions
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: fig-rdd
+#| fig-cap: "Raw Data Distribution"
+
+
+# Define variable groups
+set1_vars <- c("pollster_rating_id", "pollster_id", "sponsor_candidate_id", "sponsor_candidate_party")
+set2_vars <- c("tracking", "internal", "partisan")
+set3_vars <- c("sponsor_ids", "question_id", "internal", "race_id")
+
+# Define a function to generate a grid of plots for a given set of variables with increased text size
+plot_variable_distributions <- function(data, vars) {
+  plots <- list()
+  for (var in vars) {
+    if (is.numeric(data[[var]])) {
+      p <- ggplot(data, aes(x = .data[[var]])) +
+        geom_histogram(bins = 30, fill = "steelblue", color = "black") +
+        labs(title = var) +
+        theme_minimal() +
+        theme(
+          plot.title = element_text(size = 18, face = "bold"),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank()
+        )
+    } else {
+      p <- ggplot(data, aes(x = .data[[var]])) +
+        geom_bar(fill = "steelblue", color = "black") +
+        labs(title = var) +
+        theme_minimal() +
+        theme(
+          plot.title = element_text(size = 18, face = "bold"),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          axis.text.x = element_text(size = 14, angle = 45, hjust = 1)
+        )
+    }
+    plots[[var]] <- p
+  }
+  return(plots)
+}
+
+# Generate plots for each set of variables
+plot1 <- plot_variable_distributions(raw_data, set1_vars)
+plot2 <- plot_variable_distributions(raw_data, set2_vars)
+plot3 <- plot_variable_distributions(raw_data, set3_vars)
+
+# Arrange the first three sets of plots into grids and display them
+grid.arrange(grobs = plot1, ncol = 2, top = textGrob("Distribution of Variables (Set 1)", gp=gpar(fontsize=20, fontface="bold")))
+grid.arrange(grobs = plot2, ncol = 2, top = textGrob("Distribution of Variables (Set 2)", gp=gpar(fontsize=20, fontface="bold")))
+grid.arrange(grobs = plot3, ncol = 2, top = textGrob("Distribution of Variables (Set 3)", gp=gpar(fontsize=20, fontface="bold")))
+
+# Separate set4, set5, and set6 variables for individual adjustments
+
+# Set 4: State Plot (excluding NA)
+state_plot <- raw_data %>%
+  filter(!is.na(state)) %>%  
+  count(state, sort = TRUE) %>%
+  top_n(10) %>%
+  ggplot(aes(y = reorder(state, n), x = n)) +
+  geom_bar(stat = "identity", fill = "steelblue", color = "black") +
+  labs(title = "Distribution of State (Set 4)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12)
+  )
+
+# Set 5: ranked_choice_round_plot Plot (excluding NA)
+ranked_choice_round_plot <- raw_data %>%
+  filter(!is.na(ranked_choice_round)) %>%  
+  ggplot(aes(x = ranked_choice_round)) +
+  geom_density(fill = "steelblue", alpha = 0.7) +
+  labs(title = "Distribution of ranked_choice_round (Set 5)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 12)
+  )
+
+created_at_plot <- raw_data %>%
+  filter(!is.na(created_at)) %>%  # 去掉NA值
+  ggplot(aes(x = as.POSIXct(created_at, format = '%m/%d/%y %H:%M'))) +
+  geom_density(fill = "steelblue", alpha = 0.7) +
+  labs(title = "Distribution of Created At (Set 8)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 12)
+  )
+
+# Display each plot individually
+print(state_plot)
+print(ranked_choice_round_plot)
+print(created_at_plot)
+```
 
 
 
