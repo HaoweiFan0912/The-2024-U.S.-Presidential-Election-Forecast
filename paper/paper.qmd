@@ -461,10 +461,12 @@ Subsequently, we handled the missing values by imputing numerical variables with
 Next, we extracted the data for each candidate individually. We calculated a weighted score by weighting according to the number of times each candidate was mentioned in the polls. After comparison, we observed that the top three candidates—Trump, Harris, and Biden—had significantly higher scores than the remaining candidates. Given that Biden has withdrawn from the race, we are now focusing only on the datasets for Trump and Harris for further analysis. 
 
 Next, we split the data for Trump and Harris into a training set (70%) and a test set (30%). These four datasets form our analysis data. Below is a portion of the Trump training set for reference:
-```{r}
+```{r, fig.height=30, fig.width=60}
 #| warning: false
 #| message: false
 #| echo: false
+#| label: tbl-eoad
+#| tbl-cap: "Example of analysis data"
 kable(head(train_Trump), col.names = names(train_Trump))
 ```
 ## Measurement
@@ -529,6 +531,11 @@ Additionally, the reason we only compared the data of Trump and Harris to predic
 \end{align}
 
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-wsft5c
+#| tbl-cap: "Weighted score for top 5 candidates"
 # Define the directory path containing the parquet files
 p <- "data/03-cleaned_data"
 parquet_files <- list.files(path = here::here(p), full.names = TRUE)
@@ -563,24 +570,6 @@ top_5_weighted_scores %>% kable()
 ```
 
 
-```{r}
-#| warning: false
-#| message: false
-#| echo: false
-#| label: tbl-t5c
-#| tbl-cap: "Top 5 Candidates"
-# Find the top 5 candidates.
-candidate_ranking <- raw_data %>%
-  group_by(candidate_name) %>%
-  summarize(
-    poll_count = n(),                    
-    avg_weighted_pct = mean(poll_count * pct, na.rm = TRUE)  
-  ) %>%
-  arrange(desc(avg_weighted_pct)) %>%    
-  slice_head(n = 5)                       
-kable(candidate_ranking, col.names = c("candidate", "number of polls", "weighted score"))
-  
-```
 
 
 
@@ -600,6 +589,8 @@ score是我们模型的response variable，它代表的是某个候选人在某�
 #| warning: false
 #| message: false
 #| echo: false
+#| label: tbl-sositd
+#| tbl-cap: "Sumarry of score in training datasets"
 # Calculate mean, variance, and sample size
 summary_stats <- bind_rows(
   train_Trump %>% summarise(mean = round(mean(score, na.rm = TRUE), 2), variance = round(var(score, na.rm = TRUE), 2), sample_size = n()) %>% mutate(dataset = "train_Trump"),
@@ -845,9 +836,9 @@ select_feature_value <- function(data, candidate_name) {
       if (sum(!is.na(col_data)) > 1) {  # Ensure there is more than one valid value
         skew_val <- skewness(col_data, na.rm = TRUE)
         if (!is.na(skew_val) && skew_val < 1) {
-          feature_values[[col_name]] <- mean(col_data, na.rm = TRUE)
+          feature_values[[col_name]] <- round(mean(col_data, na.rm = TRUE),2)
         } else {
-          feature_values[[col_name]] <- median(col_data, na.rm = TRUE)
+          feature_values[[col_name]] <- round(median(col_data, na.rm = TRUE),2)
         }
       } else {
         # Default to median if skewness cannot be computed
@@ -882,18 +873,25 @@ Mode <- function(x) {
 trump_features <- select_feature_value(full_Trump, "Donald Trump")
 harris_features <- select_feature_value(full_Harris, "Kamala Harris")
 
+all_candidate_features <- data_frame(trump = trump_features, harris = harris_features)
+
 # Round numeric columns to two decimal places before pivoting
 all_candidate_features <- all_candidate_features %>%
   mutate(across(everything(), as.character))  # Convert all columns to character for compatibility in pivot_longer
 
-# Pivot the data to create a vertically aligned table with candidate names in the first row
-all_candidate_features_long <- all_candidate_features %>%
-  pivot_longer(cols = -Candidate, names_to = "Variable", values_to = "Value") %>%
-  pivot_wider(names_from = Candidate, values_from = Value)
+all_candidate_features <- head(all_candidate_features, -1)
+
+variables <- c("numeric_grade", "pollscore", "methodology", "transparency_score", 
+               "sample_size", "population", "ranked_choice_reallocated", 
+               "hypothetical", "score", "duration")
+
+all_candidate_features$variables <- variables
+
+all_candidate_features <- all_candidate_features[, c("variables", setdiff(names(all_candidate_features), "variables"))]
+
 
 # Display the final table with kable
-kable(all_candidate_features_long, caption = "Featured Values for Each Candidate")
-
+kable(all_candidate_features)
 
 ```
 ## Prediction result of the linear model
@@ -901,6 +899,9 @@ kable(all_candidate_features_long, caption = "Featured Values for Each Candidate
 Using the selected feature values for each candidate, we applied our trained predictive models to estimate the support levels for Kamala Harris and Donald Trump. The bar plot above illustrates the predicted values derived from our analysis. According to the model, Kamala Harris has a predicted support value of approximately 47.65, while Donald Trump is predicted to receive a support value of around 43.51. These predictions suggest an advantage for Kamala Harris over Donald Trump in terms of expected support within the context of the data used.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
+Harris_predict <- round(predict(Harris_model, newdata = harris_features),2)
+Trump_predict <- round(predict(Trump_model, newdata = trump_features),2)
+
 # Store predictions in a data frame
 predictions <- data.frame(
   Candidate = c("Kamala Harris", "Donald Trump"),
