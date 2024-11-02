@@ -37,34 +37,96 @@ Harris_model <- readRDS(here::here("models/Harris_model.rds"))
 
 # Introduction
 
+
+
 # Data {#sec-data}
 
 ## Overview
 
 ## Raw data
+Raw data 一共包含了52个variable以及17133个sample.
+```{r, fig.height=90, fig.width=90}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-vord
+#| tbl-cap: "Varibales of raw data"
 
+# Get the column names and arrange them into multiple columns
+column_names <- names(raw_data)
+num_columns <- 3  # Set the desired number of columns
+num_rows <- ceiling(length(column_names) / num_columns)
+matrix_data <- matrix(c(column_names, rep("", num_columns * num_rows - length(column_names))), 
+                      nrow = num_rows, byrow = TRUE)
 
-```{r}
-names(raw_data)
+# Convert the matrix to a data frame and format it with kable, set font size, and adjust header styling to remove extra row
+kable(as.data.frame(matrix_data), 
+      col.names = NULL)
+```
+其中重要的variables，其余的在appdendix
+```{r, fig.height=90, fig.width=90}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-ivatd
+#| tbl-cap: "Important variables and their descriptions"
+
+variable_descriptions <- data.frame(
+  Variable = c("poll_id", "methodology", "population", "ranked_choice_reallocated",
+               "hypothetical", "answer", "numeric_grade", "pollscore", 
+               "transparency_score", "start_date", "end_date", "sample_size", "pct"),
+  Description = c(
+    "Unique identifier for each poll conducted.",
+    "The method used to conduct the poll (e.g., Online Panel).",
+    "The abbreviated description of the respondent group, typically indicating their voting status (e.g., 'lv' for likely voters).",
+    "Indicates if ranked-choice voting reallocations have been applied in the results.",
+    "Indicates whether the poll is about a hypothetical match-up.",
+    "The response or answer choice given in the poll (e.g., the candidate's party).",
+    "A numeric rating given to the pollster to indicate their quality or reliability (e.g., 3.0).",
+    "A numeric value representing the score or reliability of the pollster in question (e.g., -1.1).",
+    "A score reflecting the pollster's transparency about their methodology (e.g., 9.0).",
+    "The date the poll began (e.g., 10/8/24).",
+    "The date the poll ended (e.g., 10/11/24).",
+    "The total number of respondents participating in the poll (e.g., 2712).",
+    "The percentage of the vote or support that the candidate received in the poll (e.g., 51.0 for Kamala Harris)."
+  )
+)
+
+# Create the table using kable
+kable(variable_descriptions) %>%
+  kable_styling() %>%
+  column_spec(1, width = "4.5cm") %>% # Adjust the width of the first column
+  column_spec(2, width = "10cm")    # Adjust the width of the second column
 ```
 
-Raw data 一共包含了52个variable以及17133个sample。52个varibles中以下几个与我们的project明显无关，我们在此不做讨论：
-```{r}
-# 这里需要画一个table，展示无关变量
+
+52个varibles中以下几个与我们的project明显无关，我们在此不做讨论：
+"notes", "url", "url_article", "url_topline", "url_crosstab", "source"
+
+```{r, fig.height=90, fig.width=90}
+#| warning: false
+#| message: false
+#| echo: false
 del_1 <- c("notes", "url", "url_article", "url_topline", "url_crosstab", "source")
 droped_data <- raw_data %>% select(-any_of(del_1))
-del_1
 ```
-此外，还有一些相同的variables，我们保留其一，剩下的也不做讨论，它们包括：
+此外，还有一些相同的variables，我们保留其一，剩下的也不做讨论，它们包括："pollster", "sponsors", "display_name", "pollster_rating_name", "sponsor_candidate", "endorsed_candidate_name", "population_full", "candidate_id", "candidate_name"
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
 # 这里需要画一个table，展示删除的重复变量
 del_2 <- c("pollster", "sponsors", "display_name", "pollster_rating_name", "sponsor_candidate", "endorsed_candidate_name",
            "population_full", "candidate_id", "candidate_name")
 droped_data <- droped_data %>% select(-any_of(del_2))
-del_2
 ```
 常数变量我们也不做讨论，因为无法影响我们的预测，它们是：
-```{r}
+```{r, fig.height=90, fig.width=90}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-cv
+#| tbl-cap: "Constant variables"
 # Identify variables where all values are the same (including NA)
 same_value_variables <- names(droped_data)[sapply(droped_data, function(x) length(unique(x)) == 1)]
 # Create a data frame with variables and their unique values
@@ -77,31 +139,44 @@ del_4 <- c("endorsed_candidate_id", "endorsed_candidate_party", "subpopulation",
 droped_data <- droped_data %>% select(-any_of(del_4))
 ```
 
-其中categorical的有
+其中categorical的有"poll_id", "pollster_id", "sponsor_ids", "pollster_rating_id", "methodology", "state",
+         "sponsor_candidate_id", "sponsor_candidate_party", "question_id", "population", "tracking", "created_at", "internal",
+         "partisan","race_id", "ranked_choice_reallocated", "ranked_choice_round", "hypothetical","party","answer"
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
 catego <- c("poll_id", "pollster_id", "sponsor_ids", "pollster_rating_id", "methodology", "state",
          "sponsor_candidate_id", "sponsor_candidate_party", "question_id", "population", "tracking", "created_at", "internal",
          "partisan","race_id", "ranked_choice_reallocated", "ranked_choice_round", "hypothetical","party","answer")
-catego
 ```
-重要的categorical为下面的，剩下的将在appendix阐述
+重要的categorical为下面的，剩下的将在appendix阐述："poll_id", "methodology", "population", "ranked_choice_reallocated", "hypothetical","answer"
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
 catego_inp <- c("poll_id", "methodology", "population", "ranked_choice_reallocated", "hypothetical","answer")
-catego_inp
 ```
 一共有3530个poll
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
 # Get unique Poll IDs and print the count
 unique_poll_ids <- unique(raw_data$poll_id)
-print(length(unique_poll_ids))
 ```
 描述
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: fig-bv
+#| fig-cap: "Boolean variables"
 plots <- list()
 # Create bar charts for 'ranked_choice_reallocated' and 'hypothetical'
 plots[["ranked_choice"]] <- ggplot(raw_data, aes(x = ranked_choice_reallocated)) +
   geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
-  labs(title = "Bar Chart of Ranked Choice Reallocated", x = "Ranked Choice Reallocated", y = "Count") +
+  labs(title = "Ranked Choice Reallocated", x = "Ranked Choice Reallocated", y = "Count") +
   theme_minimal(base_size = 15) +
   theme(
     plot.title = element_text(hjust = 0.5, size = 12),
@@ -111,7 +186,7 @@ plots[["ranked_choice"]] <- ggplot(raw_data, aes(x = ranked_choice_reallocated))
 
 plots[["hypothetical"]] <- ggplot(raw_data, aes(x = hypothetical)) +
   geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
-  labs(title = "Bar Chart of Hypothetical", x = "Hypothetical", y = "Count") +
+  labs(title = "Hypothetical", x = "Hypothetical", y = "Count") +
   theme_minimal(base_size = 15) +
   theme(
     plot.title = element_text(hjust = 0.5, size = 12),
@@ -132,6 +207,12 @@ print(combined_plot)
 ```
 描述
 ```{r, fig.pos="H", fig.width=18, fig.height=18}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: fig-cv
+#| fig-cap: "Catogorical variables"
+
 plots <- list()
 # Find the top 3 most frequent values in 'methodology' and group others as 'Other'
 methodology_counts <- sort(table(raw_data$methodology), decreasing = TRUE)
@@ -180,18 +261,20 @@ combined_plot <- wrap_plots(plots, ncol = 3, nrow = 1, heights = unit(rep(8, 4),
 print(combined_plot)
 ```
 
-以及numerical的variables
+以及numerical的variables："numeric_grade"      "pollscore"          "transparency_score" "start_date"         "end_date"        "sample_size" "pct"
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
 numer <- droped_data %>% select(-any_of(catego))
-names(numer)
 ```
 描述
 ```{r, fig.pos="H", fig.width=18, fig.height=18}
 #| warning: false
 #| message: false
 #| echo: false
-#| label: fig-numdis_1
-#| fig-cap: "Distribution of numerical varibales"
+#| label: fig-donvp1
+#| fig-cap: "Distribution of numerical varibales part 1"
 ### Create Plots for Numeric Variables ###
 # Create a list to store plots
 plots <- list()
@@ -223,8 +306,8 @@ print(combined_plot)
 #| warning: false
 #| message: false
 #| echo: false
-#| label: fig-numdis_2
-#| fig-cap: "Distribution of numerical varibales"
+#| label: fig-donvp2
+#| fig-cap: "Distribution of numerical varibales part 2"
 ### Create Plots for Numeric Variables ###
 # Create a list to store plots
 plots <- list()
@@ -257,7 +340,7 @@ print(combined_plot)
 #| warning: false
 #| message: false
 #| echo: false
-#| label: fig-date
+#| label: fig-dodv
 #| fig-cap: "Distribution of date varibales"
 
 ### Define Variables and Prepare Data ###
@@ -294,14 +377,40 @@ print(combined_plot)
 ```
 
 ## Cleaned data
-在raw data中我们提到过，在总共的52个variables。其中一些比如“url”之类的变量与该项目明显无关。有一部分位常数variable，比如
-“election_date”的值全部都是“11/5/24”。还有一部分是意思相同的variables，比如说“pollster_id”和“pollster”。另外还有一部分是
-只有以下variables对我们的project有意义：
-```{r}
-names(droped_data)
+In the raw data, we initially identified a total of 52 variables. Some of these variables, such as 'url', are clearly unrelated to the objectives of this project. There are also constant variables, such as 'election_date', which consistently contains the value '11/5/24'. Additionally, we found duplicate variables conveying the same information, like 'pollster_id' and 'pollster'. Therefore, we first removed these irrelevant and redundant variables. The remaining variables are as follows:
+
+```{r, fig.height=90, fig.width=90}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-rv
+#| tbl-cap: "Remained variables"
+
+# Get the column names and arrange them into multiple columns
+column_names <- names(droped_data)
+num_columns <- 3  # Set the desired number of columns
+num_rows <- ceiling(length(column_names) / num_columns)
+matrix_data <- matrix(c(column_names, rep("", num_columns * num_rows - length(column_names))), 
+                      nrow = num_rows, byrow = TRUE)
+
+# Convert the matrix to a data frame and format it with kable, set font size, and adjust header styling to remove extra row
+kable(as.data.frame(matrix_data), 
+      col.names = NULL)
 ```
-在清理过程中，我们首先删除了NA值占比大于40%的值
+
+
+
+
+
+
+
+Next, we calculated the percentage of missing values for each variable across the entire dataset. We then removed all variables with more than 40% missing values. These variables, along with their respective proportions of missing values, are as follows:
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-vwbpomv
+#| tbl-cap: "Variables with big porpotion of missing values"
 na_proportions <- sapply(names(droped_data), function(var) {
   round(mean(is.na(raw_data[[var]])), 2)
 })
@@ -309,40 +418,102 @@ na_proportions <- sapply(names(droped_data), function(var) {
 # Create a data frame with variable names and their NA proportions
 na_proportions_data <- data.frame(Variable = names(droped_data), NA_Proportion = na_proportions)
 
-# Print the NA proportions using kable
-kable(na_proportions_data[, 2, drop = FALSE], col.names = c("NA Proportion"))
-```
-```{r}
 # Filter variables with NA proportion greater than 40%
 high_na_proportions <- na_proportions_data[na_proportions_data$NA_Proportion > 0.4, ]
 
 # Print the NA proportions greater than 40% using kable
 kable(high_na_proportions[, 2, drop = FALSE], col.names = c("Variable", "NA Proportion"))
-```
-```{r}
+
 del_5 <- c("sponsor_ids", "state", "sponsor_candidate_id", "sponsor_candidate_party", "tracking",
            "internal","partisan","ranked_choice_round")
 droped_data <- droped_data %>% select(-any_of(del_5))
-names(droped_data)
+
 ```
 
-我们选择了一些感兴趣的variables
+
+Since the influence of pollsters can be quantified using their ratings, such as 'numeric_grade', 'pollscore', and 'transparency_score', we removed these variables to simplify the dataset and the model. Similarly, 'created_at' was also removed due to its strong correlation with 'start_date'. At this point, the remaining variables are as follows:
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
+del_6 <- c("pollster_id", "pollster_rating_id", "created_at")
+droped_data <- droped_data %>% select(-any_of(del_6))
+```
+Finally, due to the limitations of our model, we removed 'race_id', 'party', and 'question_id'. The reason for this is that we will extract and analyze the data for each candidate individually, which makes 'race_id' and 'party' constant within the corresponding dataset. Additionally, 'question_id' contains 6,421 unique values, making it unsuitable for categorization, and we removed it to avoid overfitting the model.
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+# Get unique Question IDs and print the count
+unique_question_ids <- unique(raw_data$question_id)
+```
+
+Finally, the remaining variables are as follows:
+
+```{r, fig.height=30, fig.width=30}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-fv
+#| tbl-cap: "Final variables"
 final <- c("poll_id","numeric_grade","pollscore","methodology","transparency_score","sample_size","population", 
            "ranked_choice_reallocated", "hypothetical", "answer","pct","start_date", "end_date")
-final
+
+# Get the column names and arrange them into multiple columns
+column_names <- final
+num_columns <- 3  # Set the desired number of columns
+num_rows <- ceiling(length(column_names) / num_columns)
+matrix_data <- matrix(c(column_names, rep("", num_columns * num_rows - length(column_names))), 
+                      nrow = num_rows, byrow = TRUE)
+
+# Convert the matrix to a data frame and format it with kable, set font size, and adjust header styling to remove extra row
+kable(as.data.frame(matrix_data), 
+      col.names = NULL)
 ```
 
-然后我们Create a new variable called 'duration' (days difference between start_date and end_date) and remove 'start_date' and 'end_date'
-然后Group methodology by level
-然后Replace NA values - numerical variables with mean, categorical variables with mode
-然后Rename pct as score
-然后我们用janitor::clean_names。
-然后我们把每个candidate的数据单独提了出来。
-通过计算每个候选人加权过的score（score平均值*poll的个数）。发现前三名川普，哈里斯，拜登与剩下的候选人分数悬殊。又由于
-拜登已经退出参选。我们现在只考虑川普和哈里斯。
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+
+
+
+
+
+
+After finalizing the variables, we first created a new variable named 'duration', which replaced 'start_date' and 'end_date'. This new variable represents the number of days between 'start_date' and 'end_date'.Next, we categorized the 51 different methodologies into four levels, ranging from the least reliable and accurate (level_1) to the most reliable (level_4). The specific classifications are as follows:
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-mc
+#| tbl-cap: "Methodology classfication"
+
+# Create a summary data frame for the methodologies and their levels
+methodology_summary <- data.frame(
+  Level = c("level 1", "level 2", "level 3", "level 4"),
+  Methodologies = c(
+    paste(c("Email", "Email/Online Ad", "Live Phone/Text-to-Web/Email/Mail-to-Web/Mail-to-Phone", "Mail-to-Web/Mail-to-Phone", "Online Ad"), collapse = ", "),
+    paste(c("App Panel", "IVR", "IVR/Live Phone/Text/Online Panel/Email", "IVR/Online Panel", "IVR/Online Panel/Email", "IVR/Online Panel/Text-to-Web", "IVR/Online Panel/Text-to-Web/Email", "IVR/Text", "IVR/Text-to-Web", "IVR/Text-to-Web/Email", "Live Phone/Email", "Live Phone/Online Panel/Mail-to-Web", "Live Phone/Text/Online Ad", "Live Phone/Text-to-Web/Email", "Live Phone/Text-to-Web/Email/Mail-to-Web", "Live Phone/Text-to-Web/Online Ad", "Online Panel/Email", "Online Panel/Email/Text-to-Web", "Online Panel/Online Ad", "Text-to-Web/Email", "Text-to-Web/Online Ad"), collapse = ", "),
+    paste(c("IVR/Live Phone/Online Panel", "IVR/Live Phone/Online Panel/Text-to-Web", "IVR/Live Phone/Text", "IVR/Live Phone/Text-to-Web", "Live Phone/Online Panel/App Panel", "Live Phone/Online Panel/Text", "Live Phone/Online Panel/Text-to-Web", "Live Phone/Online Panel/Text-to-Web/Text", "Live Phone/Text", "Live Phone/Text/Online Panel", "Live Phone/Text-to-Web", "Live Phone/Text-to-Web/App Panel", "Online Panel", "Online Panel/Text", "Online Panel/Text-to-Web", "Online Panel/Text-to-Web/Text", "Text", "Text-to-Web"), collapse = ", "),
+    paste(c("Live Phone", "Live Phone/Online Panel", "Live Phone/Probability Panel", "Online Panel/Probability Panel", "Probability Panel"), collapse = ", ")
+  )
+)
+
+# Print the summary of methodologies and their levels using kable
+kable(methodology_summary, col.names = c("Level", "Methodologies")) %>%
+  column_spec(1, width = "1.5cm") %>% # Adjust the width of the first column
+  column_spec(2, width = "13cm")
+```
+In our classification, we primarily considered whether the survey method was active or passive, giving higher scores to methodologies involving active outreach by statistical agencies. We then averaged the scores of all methods used in each poll; the higher the average, the higher the assigned level.
+
+Subsequently, we handled the missing values by imputing numerical variables with their mean values and categorical variables with their mode. Since our results are not exact percentages, we used 'score' to name what would typically be called 'pct'. We then used janitor::clean_names to finalize and tidy up the variable names.Next, we extracted the data for each candidate individually. We calculated a weighted score by weighting according to the number of times each candidate was mentioned in the polls. After comparison, we observed that the top three candidates—Trump, Harris, and Biden—had significantly higher scores than the remaining candidates. Given that Biden has withdrawn from the race, we are now focusing only on the datasets for Trump and Harris for further analysis. The specific weighted scores for the top five candidates are as follows:
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-t5c
+#| tbl-cap: "Top 5 Candidates"
 # Find the top 5 candidates.
 candidate_ranking <- raw_data %>%
   group_by(candidate_name) %>%
@@ -352,12 +523,14 @@ candidate_ranking <- raw_data %>%
   ) %>%
   arrange(desc(avg_weighted_pct)) %>%    
   slice_head(n = 5)                       
-print(candidate_ranking)
+kable(candidate_ranking, col.names = c("candidate", "number of polls", "weighted score"))
+  
 ```
-我们将它们两人的数据单独提出来，并且分成了train（70%）,test(30%)
-这四个文件就是我们的analysisdata。
-以下是川普训练集的部分数据以供参考
+Next, we split the data for Trump and Harris into a training set (70%) and a test set (30%). These four datasets form our analysis data. Below is a portion of the Trump training set for reference:
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
 kable(head(train_Trump), col.names = names(train_Trump))
 ```
 
@@ -366,36 +539,169 @@ kable(head(train_Trump), col.names = names(train_Trump))
 
 ## Similar dataset
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Model
+## Model overview
+我们一共有2个model，分别用来预测川普和哈里斯在2024年11月5日美国总统竞选的最终支持率。
+
+\begin{align} 
+Score_{Trump} = &\beta_1Pollscore + \beta_2Transparency\_score + \beta_3Duration + \\
+        &\beta_4Sample\_size + \beta_5Population + \beta_6Hypothetical + \beta_0 \notag \\[0.5cm]
+Score_{Harris} = &\alpha_1Pollscore + \alpha_2Transparency\_score + \alpha_3Duration + \\
+        &\alpha_4Sample\_size + \alpha_5Population + \alpha_6Hypothetical + \alpha_0 \notag
+\end{align}
+
+
+
+
+其中
+
+
+
+score ~ pollscore + transparency_score + duration + sample_size + population + hypothetical
+
+
+
+
+
 ## Model set-up
 ### response variable
-我的的response variable是score，我们首先检查了两个训练集里面score的分布。
+在此章节中，我们用到的数据都是哈里斯和特朗普的训练集。
+score是我们模型的response variable，它代表的是某个候选人在某次选票中胜利的可能性，越大代表着该候选人竞选成功的概率越大，通常情况下与该候选人在那次选票中的支持率一样。
+下图可以看出来哈里斯和特朗普的score都接近于正态分布。其中川普的score呈现一个对称的趋势，其中最多的score是在50左右。训练集中，川普的score平均数是44.63，方差是24.68。相比之下，哈里斯的score分布有一些偏向于左侧的倾斜。训练集中，哈里斯的score平均数高于特朗普为46.92，方差略低于川普为20.96。值得注意的是川普数据的样本量为3960，而哈里斯只有1636.
+
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
+# Calculate mean, variance, and sample size
+summary_stats <- bind_rows(
+  train_Trump %>% summarise(mean = round(mean(score, na.rm = TRUE), 2), variance = round(var(score, na.rm = TRUE), 2), sample_size = n()) %>% mutate(dataset = "train_Trump"),
+  train_Harris %>% summarise(mean = round(mean(score, na.rm = TRUE), 2), variance = round(var(score, na.rm = TRUE), 2), sample_size = n()) %>% mutate(dataset = "train_Harris")
+)
+
+# Display results using kable
+summary_stats %>%
+  select(dataset, mean, variance, sample_size) %>%
+  kable()
+
+```
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
 # Plot a histogram for the 'pct' variable
 ggplot(train_Trump, aes(x = score)) +
-  geom_histogram(binwidth = 5, fill = "blue", color = "black", alpha = 0.7) +
+  geom_histogram(binwidth = 2, fill = "blue", color = "black", alpha = 0.7) +
   labs(title = "Histogram of pct", x = "pct", y = "Frequency")
 ggplot(train_Harris, aes(x = score)) +
-  geom_histogram(binwidth = 5, fill = "blue", color = "black", alpha = 0.7) +
+  geom_histogram(binwidth = 2, fill = "blue", color = "black", alpha = 0.7) +
   labs(title = "Histogram of pct", x = "pct", y = "Frequency")
 ```
-它们都呈现正态分布，这是使用MLR的条件之一。
+
 
 ### Predictor
-在我们的两个train数据集里面，我们首先检查了所有numerical variable的关系。
-```{r, fig.width=10, fig.height=10}
-data2 = raw_data %>% select("numeric_grade", "pollscore","transparency_score","sample_size")
-pairs( data2 , main = "Predictor vs predictor")
-```
-由于我们发现pollscore和numerical grade之间呈现了明显的线性关系，因此，我们舍弃掉了numerical grade。
-因此我们的模型predictor是：
+我们的predictors包含以下变量：
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
 predictors <- c("pollscore","methodology","transparency_score","sample_size","population", 
            "ranked_choice_reallocated", "hypothetical", "duration")
+predictors
 ```
+
+下图展示了在川普的训练集中，numerical predictor 之间的关系。没有明显的趋势代表着它们之间没有明显的correlation。
+```{r, fig.width=10, fig.height=10}
+#| warning: false
+#| message: false
+#| echo: false
+data2 = train_Trump %>% select("pollscore","transparency_score","sample_size","duration")
+pairs( data2 , main = "Predictor vs predictor")
+```
+
+关于categorical的：。。。。。。。。。。。。。。。。
+
+
+
 ### alternative models
 最开始我们的模型是
+
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
+Trump_model_0 <- lm(
+  score ~ numeric_grade + pollscore + transparency_score + duration + sample_size + population + hypothetical + ranked_choice_reallocated +
+    methodology, data = train_Trump)
+Harris_model_0 <- lm(
+  score ~ numeric_grade + pollscore + transparency_score + duration + sample_size + population + hypothetical + ranked_choice_reallocated +
+    methodology, data = train_Harris)
+```
+
+因为我们考虑到numeric_grade和pollscore之间有强线性相关，我们舍弃了这一方案。
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+# Plot relationship between numeric_grade and pollscore for train_Trump
+ggplot(train_Trump, aes(x = numeric_grade, y = pollscore)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(title = "Relationship between Numeric Grade and Pollscore (train_Trump)",
+       x = "Numeric Grade",
+       y = "Pollscore")
+
+# Plot relationship between numeric_grade and pollscore for train_Harris
+ggplot(train_Harris, aes(x = numeric_grade, y = pollscore)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Relationship between Numeric Grade and Pollscore (train_Harris)",
+       x = "Numeric Grade",
+       y = "Pollscore")
+```
+
+
+
+这个是我们的第二个方案。虽然predictors之间没有了相关性，但是methodology，ranked_choice_reallocated，这两个变量并不statistical significant，因为他们的p value都大于0.05.
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
 Trump_model_1 <- lm(
   score ~ pollscore + transparency_score + duration + sample_size + population + hypothetical + ranked_choice_reallocated +
     methodology, data = train_Trump)
@@ -405,6 +711,9 @@ Harris_model_1 <- lm(
 ```
 
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
 # Get the summary of the model
 Harris_summary <- summary(Harris_model_1)
 # Extract coefficients from the summary
@@ -435,14 +744,17 @@ grid.arrange(tableGrob(Trump_kable), tableGrob(Harris_kable), nrow = 1)
 
 ```
 
-去掉不显著的变量：methodology，ranked_choice_reallocated
-
+因此，我们有有了最后的模型。
 ```{r}
-summary(Trump_model_1)
-summary(Harris_model_1)
-```
-
-```{r}
+#| warning: false
+#| message: false
+#| echo: false
+"
+Trump_model <- lm(
+  score ~ pollscore + transparency_score + duration + sample_size + population + hypothetical, data = train_Trump)
+Harris_model <- lm(
+  score ~ pollscore + transparency_score + duration + sample_size + population + hypothetical, data = train_Harris)
+"
 summary(Trump_model)
 summary(Harris_model)
 ```
@@ -451,17 +763,24 @@ summary(Harris_model)
 ## validation
 从您的结果来看，所有变量的 GVIF 值都在 1 到 1.3 之间，这些数值非常低，表明各个自变量之间的共线性很小，模型并没有因为共线性而受到显著影响。
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
 vif(Trump_model)
 vif(Harris_model)
 ```
 
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
 par(mfrow=c(2,2))
 plot(Harris_model,1)
 plot(Harris_model,2)
 ```
 
 ```{r}
+
 par(mfrow=c(2,2))
 plot(Trump_model,1)
 plot(Trump_model,2)

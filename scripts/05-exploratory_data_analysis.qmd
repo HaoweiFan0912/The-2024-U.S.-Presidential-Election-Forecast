@@ -30,7 +30,7 @@ print(unique_question_ids)
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # Get unique methodologys
 unique_methodologys <- unique(raw_data$methodology)
-print(unique_methodologys)
+print(length(unique_methodologys))
 ```
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # Get unique population
