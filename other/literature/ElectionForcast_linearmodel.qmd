@@ -26,20 +26,20 @@ library(kableExtra)
 
 # Overview
 
-The purpose of this document is to explain the details used in the linear model.This linear model is used to forecast the U.S. 2024 president election by predicting the wining rate outcomes of polls based on several features of polls. Broadly, the model can be described as a Linear hierachical model:
+The purpose of this document is to explain the details used in the linear model. This linear model is used to forecast the U.S. 2024 president election by predicting the wining rate outcomes of polls based on several features of polls. Broadly, the model can be described as a linear hierarchical model:
 
 1. A model to capture the association between the outcome (the support or winning rate of candidate) and the input variables (poll reliability score, quality-related factors, and etc)
 
-2.Each independent variables in this model is consider distributed normally, so as the intercept.
+2. Each independent variable in this model is consider distributed normally, so as the intercept.
 
 ## Overview of the input values for prediction
 
 The values are selected based on the significant value of variables of each candidate.The significant values of variables are chosen based on the their distribution.
 
-For numeric variables, we chose either the mean or the median as the representative feature value, depending on the data's distribution.
+For numeric variables, we chose either the mean or the median as the representative feature value, depending on the data distribution.
 If the data distribution was approximately symmetric (low skewness), we used the mean, as it best represents the central tendency。
 
-For highly skewed data, we used the median to avoid the influence of outliers, providing a more robust measure of central tendency.
+For highly skewed data, we used the median to avoid the influence of the outliers, providing a more robust measure of central tendency.
 
 For categorical variables, we selected the mode (the most frequent category) as the feature value.
 The mode is often the best representative of categorical data, as it reflects the most common category and thus the main trend within the data.
@@ -155,7 +155,7 @@ The hierarchical structure in this model is established through the use of prior
 ## Steps of prediction
 
 ### Load Models and Data
-The linear models for both Trump and Harris were loaded using readRDS(). We use ths featured value mentioned before as input values in our model.
+The linear models for both Trump and Harris were loaded using readRDS(). We use this featured value mentioned before as input values in our model.
 
 ### Data Preprocessing
 The hypothetical column was converted to logical data type where necessary, ensuring data compatibility with prediction models.
