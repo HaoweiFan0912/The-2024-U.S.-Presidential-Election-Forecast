@@ -14,8 +14,8 @@ library(rstanarm)
 library(patchwork)
 library(moments)
 raw_data <- read_csv(here::here("data/01-raw_data/raw_data.csv"))
-Trump_test <- read_csv(here::here("data/02-analysis_data/02-Testing/test_Trump.parquet"))
-Harris_test <- read_csv(here::here("data/02-analysis_data/02-Testing/test_Harris.parquet"))
+Trump_test <- read_parquet(here::here("data/02-analysis_data/02-testing/test_Trump.parquet"))
+Harris_test <- read_parquet(here::here("data/02-analysis_data/02-testing/test_Harris.parquet"))
 ```
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # Get unique pollster IDs
@@ -175,8 +175,8 @@ Mode <- function(x) {
 }
 
 # Calculate feature values for each candidate
-trump_features <- select_feature_value(trump_test, "Donald Trump")
-harris_features <- select_feature_value(harris_test, "Kamala Harris")
+trump_features <- select_feature_value(Trump_test, "Donald Trump")
+harris_features <- select_feature_value(Harris_test, "Kamala Harris")
 
 # Combine results into a single data frame for easy viewing
 all_candidate_features <- bind_rows(trump_features, harris_features)
