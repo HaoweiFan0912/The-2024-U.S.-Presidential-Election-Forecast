@@ -7,7 +7,7 @@ author:
 thanks: "Code and data are available at: [https://github.com/RohanAlexander/starter_folder](https://github.com/RohanAlexander/starter_folder)."
 date: today
 date-format: long
-abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
+abstract: "This study aggregates polling data to forecast 2024 U.S. presidential candidate support for Kamala Harris and Donald Trump. Employing linear models with adjustments, the analysis finds a modest lead for Harris at 47.6% compared to Trump’s 43.5%. The results demonstrate that rigorously weighted polling data enhances forecast stability, offering valuable insights for political and economic decision-makers."
 format: pdf
 number-sections: true
 bibliography: references.bib
