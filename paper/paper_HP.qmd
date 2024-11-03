@@ -56,14 +56,14 @@ This paper is organized as follows: The next section outlines the data collectio
 # Data {#sec-data}
 
 ## Overview
-The dataset comes from FiveThirtyEight's 'Presidential Election Polls (Current Cycle)' (Ryan Best and Wiederkehr, 2024). FiveThirtyEight is a well-known website recognized for its political, economic, and sports analyses. Its polling aggregation methodology is highly regarded in the field, aiming to provide readers with transparent, scientific, and as accurate as possible predictions. This polling data is compiled from various polling agencies, encompassing a wide range of demographic information, which serves as an essential basis for analyzing public voting preferences in the upcoming presidential election.
+The dataset comes from FiveThirtyEight's 'Presidential Election Polls (Current Cycle)' (@citeRawData). FiveThirtyEight is a well-known website recognized for its political, economic, and sports analyses. Its polling aggregation methodology is highly regarded in the field, aiming to provide readers with transparent, scientific, and as accurate as possible predictions. This polling data is compiled from various polling agencies, encompassing a wide range of demographic information, which serves as an essential basis for analyzing public voting preferences in the upcoming presidential election.
 
-The analysis and visualizations in this paper are based on polling results as of October 22. The dataset includes 52 variables and 17,133 samples from various polling sources, asking participants who they support in the upcoming presidential election. To ensure accuracy and consistency, the data has been carefully processed and cleaned to remove biases and guarantee data integrity and comparability.
+In this section, we detail our selected variables, discuss key measurements, outline important limitations of our data, and our data cleaning process.
 
-This project leverages several R packages, including tidyverse[@tidyverse], rstanarm[@rstanarm], testthat[@testthat], readr[@readr], broom[@broom], ggplot2[@ggplot2], and posterior[@posterior], to clean, analyze, and visualize polling data for the 2024 U.S. presidential election forecast. These packages facilitate a reproducible approach to data handling, statistical modeling, and result presentation in this study.
 
 ## Raw data
-Raw data 一共包含了52个variable以及17133个sample.
+The analysis and visualizations in this paper are based on polling results as of October 22. The dataset includes 52 variables, 17,133 samples and 3530 polls from various polling sources. These variables are shown in the below table(@tbl-vord). 
+
 ```{r, fig.height=90, fig.width=90}
 #| warning: false
 #| message: false
@@ -82,67 +82,51 @@ matrix_data <- matrix(c(column_names, rep("", num_columns * num_rows - length(co
 kable(as.data.frame(matrix_data), 
       col.names = NULL)
 ```
-其中重要的variables，其余的在appdendix
-```{r, fig.height=90, fig.width=90}
-#| warning: false
-#| message: false
-#| echo: false
-#| label: tbl-ivatd
-#| tbl-cap: "Important variables and their descriptions"
 
-variable_descriptions <- data.frame(
-  Variable = c("poll_id", "methodology", "population", "ranked_choice_reallocated",
-               "hypothetical", "answer", "numeric_grade", "pollscore", 
-               "transparency_score", "start_date", "end_date", "sample_size", "pct"),
-  Description = c(
-    "Unique identifier for each poll conducted.",
-    "The method used to conduct the poll (e.g., Online Panel).",
-    "The abbreviated description of the respondent group, typically indicating their voting status (e.g., 'lv' for likely voters).",
-    "Indicates if ranked-choice voting reallocations have been applied in the results.",
-    "Indicates whether the poll is about a hypothetical match-up.",
-    "The response or answer choice given in the poll (e.g., the candidate's party).",
-    "A numeric rating given to the pollster to indicate their quality or reliability (e.g., 3.0).",
-    "A numeric value representing the score or reliability of the pollster in question (e.g., -1.1).",
-    "A score reflecting the pollster's transparency about their methodology (e.g., 9.0).",
-    "The date the poll began (e.g., 10/8/24).",
-    "The date the poll ended (e.g., 10/11/24).",
-    "The total number of respondents participating in the poll (e.g., 2712).",
-    "The percentage of the vote or support that the candidate received in the poll (e.g., 51.0 for Kamala Harris)."
-  )
-)
-
-# Create the table using kable
-kable(variable_descriptions) %>%
-  kable_styling() %>%
-  column_spec(1, width = "4.5cm") %>% # Adjust the width of the first column
-  column_spec(2, width = "10cm")    # Adjust the width of the second column
-```
-52个varibles中以下几个与我们的project明显无关，我们在此不做讨论：
-"notes", "url", "url_article", "url_topline", "url_crosstab", "source"
-```{r, fig.height=90, fig.width=90}
-#| warning: false
-#| message: false
-#| echo: false
-del_1 <- c("notes", "url", "url_article", "url_topline", "url_crosstab", "source")
-droped_data <- raw_data %>% select(-any_of(del_1))
-```
-此外，还有一些相同的variables，我们保留其一，剩下的也不做讨论，它们包括："pollster", "sponsors", "display_name", "pollster_rating_name", "sponsor_candidate", "endorsed_candidate_name", "population_full", "candidate_id", "candidate_name"
 ```{r}
 #| warning: false
 #| message: false
 #| echo: false
+#| include: false
+# Get unique Poll IDs and print the count
+# 一共有3530个poll
+unique_poll_ids <- unique(raw_data$poll_id)
+```
+
+## Cleaning Process
+Firstly, there are several variables clearly irrelevant to the project and will not be discussed further: notes, url, url_article, url_topline, url_crosstab, and source. 
+
+```{r, fig.height=90, fig.width=90}
+#| warning: false
+#| message: false
+#| echo: false
+#| include: false
+del_1 <- c("notes", "url", "url_article", "url_topline", "url_crosstab", "source")
+droped_data <- raw_data %>% select(-any_of(del_1))
+```
+
+Additionally, there are some duplicate variables, and we will retain only one of each, ignoring the rest: pollster, sponsors, display_name, pollster_rating_name, sponsor_candidate, endorsed_candidate_name, population_full, candidate_id, and candidate_name. 
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| include: false
 # 这里需要画一个table，展示删除的重复变量
 del_2 <- c("pollster", "sponsors", "display_name", "pollster_rating_name", "sponsor_candidate", "endorsed_candidate_name",
            "population_full", "candidate_id", "candidate_name")
 droped_data <- droped_data %>% select(-any_of(del_2))
 ```
-常数变量我们也不做讨论，因为无法影响我们的预测，它们是：
+
+Constant variables, which cannot impact our predictions, will also be excluded from further discussion. These include: endorsed_candidate_id (NA), endorsed_candidate_party (NA), subpopulation (NA), cycle (2024), office_type (U.S. President), seat_number (0), seat_name (NA), election_date (11/5/24), stage (general), and nationwide_batch (FALSE). 
+
 ```{r, fig.height=90, fig.width=90}
 #| warning: false
 #| message: false
 #| echo: false
 #| label: tbl-cv
 #| tbl-cap: "Constant variables"
+#| include: false
 # Identify variables where all values are the same (including NA)
 same_value_variables <- names(droped_data)[sapply(droped_data, function(x) length(unique(x)) == 1)]
 # Create a data frame with variables and their unique values
@@ -154,33 +138,81 @@ del_4 <- c("endorsed_candidate_id", "endorsed_candidate_party", "subpopulation",
            "office_type", "seat_number", "seat_name")
 droped_data <- droped_data %>% select(-any_of(del_4))
 ```
-其中categorical的有"poll_id", "pollster_id", "sponsor_ids", "pollster_rating_id", "methodology", "state",
-         "sponsor_candidate_id", "sponsor_candidate_party", "question_id", "population", "tracking", "created_at", "internal",
-         "partisan","race_id", "ranked_choice_reallocated", "ranked_choice_round", "hypothetical","party","answer"
+After cleaning, 27 out of the 52 variables remained potentially relevant to our research. We selected 10 variables (@tbl-ivatd) of interest and plotted their distributions in the 【data visualization section】, while the plots of the remaining variables are included in the 【appendix】.
+```{r, fig.height=90, fig.width=90}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-ivatd
+#| tbl-cap: "Important variables and their descriptions"
+
+variable_descriptions <- data.frame(
+  Variable = c("poll_id", "methodology", "population", "ranked_choice_reallocated",
+               "hypothetical", "answer", "numeric_grade", "pollscore", 
+               "transparency_score", "sample_size", "pct"),
+  Description = c(
+    "Unique identifier for each poll conducted.",
+    "The method used to conduct the poll (e.g., Online Panel).",
+    "The abbreviated description of the respondent group, typically indicating their voting status (e.g., 'lv' for likely voters).",
+    "Indicates if ranked-choice voting reallocations have been applied in the results.",
+    "Indicates whether the poll is about a hypothetical match-up.",
+    "The response or answer choice given in the poll (e.g., the candidate's party).",
+    "A numeric rating given to the pollster to indicate their quality or reliability (e.g., 3.0).",
+    "A numeric value representing the score or reliability of the pollster in question (e.g., -1.1).",
+    "A score reflecting the pollster's transparency about their methodology (e.g., 9.0).",
+    "The total number of respondents participating in the poll (e.g., 2712).",
+    "The percentage of the vote or support that the candidate received in the poll (e.g., 51.0 for Kamala Harris)."
+  )
+)
+
+# Create the table using kable
+kable(variable_descriptions) %>%
+  kable_styling() %>%
+  column_spec(1, width = "4.5cm") %>% # Adjust the width of the first column
+  column_spec(2, width = "10cm")    # Adjust the width of the second column
+```
+
+After finalizing the variables, we first created a new variable named 'duration', which replaced 'start_date' and 'end_date'. This new variable represents the number of days between 'start_date' and 'end_date'.Next, we categorized the 51 different methodologies into four levels, ranging from the least reliable and accurate (level_1) to the most reliable (level_4). 
+
+Subsequently, we handled the missing values by imputing numerical variables with their mean values and categorical variables with their mode. Since our results are not exact percentages, we used 'score' to name what would typically be called 'pct'. We then finalize and tidy up the variable names.
+
+Then, the data is extracted for each candidate individually. We calculated a weighted score by weighting according to the number of times each candidate was mentioned in the polls. After comparison, we observed that the top three candidates—Trump, Harris, and Biden—had significantly higher scores than the remaining candidates. Given that Biden has withdrawn from the race, we are now focusing only on the datasets for Trump and Harris for further analysis.
+
+We also split the data for Trump and Harris into a training set (70%) and a test set (30%). These four datasets form our analysis data. Below is a portion of the Trump training set for reference:
+```{r, fig.height=30, fig.width=60}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-eoad
+#| tbl-cap: "Example of analysis data"
+#| include: false
+kable(head(train_Trump), col.names = names(train_Trump))
+```
+
+
+## Data Visualization
 ```{r}
 #| warning: false
 #| message: false
 #| echo: false
+#| include: false
 catego <- c("poll_id", "pollster_id", "sponsor_ids", "pollster_rating_id", "methodology", "state",
          "sponsor_candidate_id", "sponsor_candidate_party", "question_id", "population", "tracking", "created_at", "internal",
          "partisan","race_id", "ranked_choice_reallocated", "ranked_choice_round", "hypothetical","party","answer")
 ```
-重要的categorical为下面的，剩下的将在appendix阐述："poll_id", "methodology", "population", "ranked_choice_reallocated", "hypothetical","answer"
+
 ```{r}
 #| warning: false
 #| message: false
 #| echo: false
+#| include: false
 catego_inp <- c("poll_id", "methodology", "population", "ranked_choice_reallocated", "hypothetical","answer")
 ```
-一共有3530个poll
-```{r}
-#| warning: false
-#| message: false
-#| echo: false
-# Get unique Poll IDs and print the count
-unique_poll_ids <- unique(raw_data$poll_id)
-```
-描述
+
+The left bar chart in (@fig-bv) shows the distribution of the `ranked_choice_reallocated` variable. The chart indicates that the majority of the data points are marked as `FALSE`, meaning ranked-choice voting reallocations have not been applied in most cases. Only a very small number of instances are marked as `TRUE`.
+
+The right bar chart in (@fig-bv) illustrates the distribution of the `hypothetical` variable. It shows that a larger proportion of the data is marked as `TRUE`, indicating that the poll results are often based on hypothetical match-ups. There are fewer instances marked as `FALSE`, where the poll is not hypothetical.
+
 ```{r}
 #| warning: false
 #| message: false
@@ -220,7 +252,12 @@ combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(3, 4),
 print(combined_plot)
 
 ```
-描述
+
+The three charts depict the distribution of key variables in the dataset: `methodology`, `population`, and `answer`. In the most left chart of (@fig-cv), we see that the most frequently used polling methodology is "Online Panel," followed by "Live Phone" and "Live Phone/Text-to-Web." The "Online Panel" category significantly outnumbers the others, while the "Other" category also includes a notable count, representing various methodologies grouped together.
+
+The middle chart of (@fig-cv) shows the distribution of different respondent groups. "lv" (likely voters) and "rv" (registered voters) dominate, with "rv" showing a slightly higher count, indicating that these two groups make up the majority of the sample. Other groups, such as "a" (all adults), "v," and those with missing values ("NA"), represent much smaller portions of the respondent pool.
+
+The most right chart of (@fig-cv), `Top 3 Answer and Others`, illustrates the responses given in the polls. "Biden" and "Trump" have similar counts, with "Trump" being slightly higher, while the "Other" category also shows a significant proportion. The response for "Harris" is noticeably lower compared to the others. Overall, these charts provide a visual representation of the polling data, highlighting the dominant methodologies, respondent groups, and response preferences in the dataset.
 ```{r, fig.pos="H", fig.width=18, fig.height=18}
 #| warning: false
 #| message: false
@@ -275,14 +312,19 @@ combined_plot <- wrap_plots(plots, ncol = 3, nrow = 1, heights = unit(rep(8, 4),
 # Print the combined plot
 print(combined_plot)
 ```
-以及numerical的variables："numeric_grade"      "pollscore"          "transparency_score" "start_date"         "end_date"        "sample_size" "pct"
+
 ```{r}
 #| warning: false
 #| message: false
 #| echo: false
+#| include: false
 numer <- droped_data %>% select(-any_of(catego))
 ```
-描述
+The `numeric_grade` histogram in (@fig-donvp1) shows the distribution of a numeric rating assigned to pollsters, representing their overall quality or reliability. The data appear to cluster heavily around scores of 2 and 3, suggesting that a large number of pollsters fall within these quality ranges. The distribution is fairly symmetric, with a noticeable concentration at these higher scores, indicating that most pollsters are considered to be of moderate to good quality.
+
+The `pollscore` histogram in (@fig-donvp1) indicates the reliability of each pollster, with lower (more negative) values being better. The distribution shows a peak around zero, with a significant number of pollsters having scores close to zero or slightly negative, and most values being negative, indicating relatively high reliability overall. This implies that most pollsters have moderate to high reliability, with fewer pollsters achieving highly negative scores, which indicate better performance. The tail towards positive values suggests that a small subset of pollsters may have issues with reliability.
+
+The distribution of `transparency_score` in (@fig-donvp1) shows a wide spread, with notable peaks at several discrete points, but no clear pattern overall. Higher scores, such as 7.5 and 10, have high frequencies, indicating that some pollsters tend to achieve relatively high transparency. On the other hand, lower scores, such as 2.5 and 5, also show some clustering, but with less consistency.
 ```{r, fig.pos="H", fig.width=18, fig.height=18}
 #| warning: false
 #| message: false
@@ -315,7 +357,10 @@ combined_plot <- wrap_plots(plots, ncol = 3, nrow = 1, heights = unit(rep(8, 4),
 # Print the combined plot
 print(combined_plot)
 ```
-描述
+
+The `Distribution of sample_size` histogram in (@fig-donvp2) illustrates the frequency of poll sample sizes. The majority of polls have relatively small sample sizes, with the frequency decreasing sharply as the sample size increases. The distribution appears highly right-skewed, suggesting that larger sample sizes are much less common than smaller ones.
+
+The `Distribution of pct` histogram in (@fig-donvp2) represents the frequency distribution of vote percentages received by candidates in various polls. Most polls have percentage values concentrated around the 30-40% range, with visible peaks at around 0% and 40%. The distribution shows some variation across a wide range but seems to have a higher frequency in the middle range (30-40%) compared to the lower and higher extremes.
 ```{r, fig.pos="H", fig.width=18, fig.height=18}
 #| warning: false
 #| message: false
@@ -348,7 +393,8 @@ combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(8, 8),
 # Print the combined plot
 print(combined_plot)
 ```
-描述
+【放appendix】
+Both charts in (@fig-dodv) show the normal distribution of poll start and end dates over time. The left chart represents the frequency of polls by their start date, while the right chart represents the frequency of polls by their end date, with both distributions primarily concentrated around 2010.The frequency drops after 2010 in both charts.
 ```{r, fig.pos="H", fig.width=18, fig.height=18}
 #| warning: false
 #| message: false
@@ -388,104 +434,8 @@ combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(8, 4),
 print(combined_plot)
 
 ```
-## Cleaned data
-In the raw data, we initially identified a total of 52 variables. Some of these variables, such as 'url', are clearly unrelated to the objectives of this project. There are also constant variables, such as 'election_date', which consistently contains the value '11/5/24'. Additionally, we found duplicate variables conveying the same information, like 'pollster_id' and 'pollster'. Therefore, we first removed these irrelevant and redundant variables. The remaining variables are as follows:
-```{r, fig.height=90, fig.width=90}
-#| warning: false
-#| message: false
-#| echo: false
-#| label: tbl-rv
-#| tbl-cap: "Remained variables"
 
-# Get the column names and arrange them into multiple columns
-column_names <- names(droped_data)
-num_columns <- 3  # Set the desired number of columns
-num_rows <- ceiling(length(column_names) / num_columns)
-matrix_data <- matrix(c(column_names, rep("", num_columns * num_rows - length(column_names))), 
-                      nrow = num_rows, byrow = TRUE)
-
-# Convert the matrix to a data frame and format it with kable, set font size, and adjust header styling to remove extra row
-kable(as.data.frame(matrix_data), 
-      col.names = NULL)
-```
-Next, we calculated the percentage of missing values for each variable across the entire dataset. We then removed all variables with more than 40% missing values. These variables, along with their respective proportions of missing values, are as follows:
-```{r}
-#| warning: false
-#| message: false
-#| echo: false
-#| label: tbl-vwbpomv
-#| tbl-cap: "Variables with big porpotion of missing values"
-na_proportions <- sapply(names(droped_data), function(var) {
-  round(mean(is.na(raw_data[[var]])), 2)
-})
-
-# Create a data frame with variable names and their NA proportions
-na_proportions_data <- data.frame(Variable = names(droped_data), NA_Proportion = na_proportions)
-
-# Filter variables with NA proportion greater than 40%
-high_na_proportions <- na_proportions_data[na_proportions_data$NA_Proportion > 0.4, ]
-
-# Print the NA proportions greater than 40% using kable
-kable(high_na_proportions[, 2, drop = FALSE], col.names = c("Variable", "NA Proportion"))
-
-del_5 <- c("sponsor_ids", "state", "sponsor_candidate_id", "sponsor_candidate_party", "tracking",
-           "internal","partisan","ranked_choice_round")
-droped_data <- droped_data %>% select(-any_of(del_5))
-
-```
-Since the influence of pollsters can be quantified using their ratings, such as 'numeric_grade', 'pollscore', and 'transparency_score', we removed these variables to simplify the dataset and the model. Similarly, 'created_at' was also removed due to its strong correlation with 'start_date'. 
-```{r}
-#| warning: false
-#| message: false
-#| echo: false
-del_6 <- c("pollster_id", "pollster_rating_id", "created_at")
-droped_data <- droped_data %>% select(-any_of(del_6))
-```
-Finally, due to the limitations of our model, we removed 'race_id', 'party', and 'question_id'. The reason for this is that we will extract and analyze the data for each candidate individually, which makes 'race_id' and 'party' constant within the corresponding dataset. Additionally, 'question_id' contains 6,421 unique values, making it unsuitable for categorization, and we removed it to avoid overfitting the model.
-```{r}
-#| warning: false
-#| message: false
-#| echo: false
-# Get unique Question IDs and print the count
-unique_question_ids <- unique(raw_data$question_id)
-```
-Finally, the remaining variables are as follows:
-```{r, fig.height=30, fig.width=30}
-#| warning: false
-#| message: false
-#| echo: false
-#| label: tbl-fv
-#| tbl-cap: "Final variables"
-final <- c("poll_id","numeric_grade","pollscore","methodology","transparency_score","sample_size","population", 
-           "ranked_choice_reallocated", "hypothetical", "answer","pct","start_date", "end_date")
-
-# Get the column names and arrange them into multiple columns
-column_names <- final
-num_columns <- 3  # Set the desired number of columns
-num_rows <- ceiling(length(column_names) / num_columns)
-matrix_data <- matrix(c(column_names, rep("", num_columns * num_rows - length(column_names))), 
-                      nrow = num_rows, byrow = TRUE)
-
-# Convert the matrix to a data frame and format it with kable, set font size, and adjust header styling to remove extra row
-kable(as.data.frame(matrix_data), 
-      col.names = NULL)
-```
-After finalizing the variables, we first created a new variable named 'duration', which replaced 'start_date' and 'end_date'. This new variable represents the number of days between 'start_date' and 'end_date'.Next, we categorized the 51 different methodologies into four levels, ranging from the least reliable and accurate (level_1) to the most reliable (level_4). 
-
-Subsequently, we handled the missing values by imputing numerical variables with their mean values and categorical variables with their mode. Since our results are not exact percentages, we used 'score' to name what would typically be called 'pct'. We then finalize and tidy up the variable names.
-
-Next, we extracted the data for each candidate individually. We calculated a weighted score by weighting according to the number of times each candidate was mentioned in the polls. After comparison, we observed that the top three candidates—Trump, Harris, and Biden—had significantly higher scores than the remaining candidates. Given that Biden has withdrawn from the race, we are now focusing only on the datasets for Trump and Harris for further analysis. 
-
-Next, we split the data for Trump and Harris into a training set (70%) and a test set (30%). These four datasets form our analysis data. Below is a portion of the Trump training set for reference:
-```{r, fig.height=30, fig.width=60}
-#| warning: false
-#| message: false
-#| echo: false
-#| label: tbl-eoad
-#| tbl-cap: "Example of analysis data"
-kable(head(train_Trump), col.names = names(train_Trump))
-```
-## Measurement
+## Measurement and Limitations
 The method used to forecast the presidential election results is the poll-of-polls, which aggregates results from multiple polls instead of relying on a single survey, aiming to make the results more accurate and stable. In this method, each poll is assigned a weight based on factors such as sample size, recency, and the pollster’s historical accuracy. 
 
 The dataset used for this prediction is from FiveThirtyEight, which includes scientifically sound public polls that meet methodological standards. Polling organizations are rated based on accuracy, transparency, and sample quality, represented by a numeric_grade (ranging from 0.5 to 3.0). Higher scores indicate greater reliability. The histogram of numeric_grade values shows a concentration around scores of 2 and 3, suggesting most pollsters are of moderate to good quality.
@@ -494,8 +444,8 @@ Polling organizations use different survey methods but follow similar principles
 
 Survey data accuracy is limited by several factors. Sampling bias can lead to an unrepresentative sample, underrepresenting certain demographics. Response bias may occur if participants are not truthful or are influenced by question phrasing. Platform differences also impact reliability, as social media polls may attract different audiences compared to phone or in-person surveys. Pollscore and numeric grade filters help ensure quality, but they are based on historical data and may not reflect current survey quality. Additionally, the rapidly changing political narrative and voter sentiment during campaigns can affect polling accuracy. These factors contribute to inaccuracies in survey results, affecting the reliability of aggregated data.
 
-
 ## Similar dataset
+A dataset similar to ours titled 2024 National Polls (@citeNYTData) for the U.S. Presidential Election is found. It was Published by The New York Times, this dataset aggregates survey results from multiple polling organizations, focusing on the support levels for major presidential candidates and aiming to reflect voters’ preferences and election trends. However, compared to our dataset, this one has fewer variables, which might reduce its predictive accuracy.
 
 # Model
 
@@ -678,45 +628,6 @@ predictors
 data2 = train_Trump %>% select("pollscore","transparency_score","sample_size","duration")
 pairs( data2 , main = "Predictor vs predictor")
 ```
-
-```{r, fig.pos="H", fig.height=10, fig.width=20}
-#| warning: false
-#| message: false
-#| echo: false
-#| label: fig-doditd
-#| fig-cap: "Distribution of durations in training dataset"
-
-plots <- list()
-# Plot a histogram for the 'pct' variable
-plots[["Trump"]]<-ggplot(train_Trump, aes(x = duration)) +
-  geom_histogram(binwidth = 2, fill = "blue", color = "black", alpha = 0.7) +
-  labs(title = "Histogram of duration for Trump", x = "Duration", y = "Frequency")
-plots[["Harris"]]<-ggplot(train_Harris, aes(x = duration)) +
-  geom_histogram(binwidth = 2, fill = "blue", color = "black", alpha = 0.7) +
-  labs(title = "Histogram of duration", x = "Duration", y = "Frequency")
-
-
-### Combine and Print Plots ###
-# Combine all individual plots into one using patchwork with 2 columns and 4 rows
-combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(5, 5), "in")) +
-  plot_annotation(
-    theme = theme(
-      plot.title = element_text(hjust = 0.5, size = 14)
-    )
-  )
-# Print the combined plot
-print(combined_plot)
-
-```
-
-
-
-
-
-
-
-
-
 
 关于categorical的：。。。。。。。。。。。。。。。。
 
@@ -921,34 +832,16 @@ kable(harris_vif_df[, 2, drop = FALSE], format = "html", caption = "VIF for Harr
 par(mfrow=c(2,2))
 plot(Harris_model,1)
 plot(Harris_model,2)
+```
+
+```{r}
+
+par(mfrow=c(2,2))
 plot(Trump_model,1)
 plot(Trump_model,2)
 ```
-
-
 然后就是描述一下response variable是normal的，然后numerical variable没有显著关系（这些在打他部分有讲过）
 总结，满足了MLR的条件，说明我们的好
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ```{r,message=FALSE, echo=FALSE,warning=FALSE,fig.height = 10, fig.width=10}
 # Generate predictions using the model
 plots <- list()

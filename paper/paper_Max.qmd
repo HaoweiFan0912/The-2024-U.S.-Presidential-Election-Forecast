@@ -1,15 +1,19 @@
 ---
-title: "My title"
-subtitle: "My subtitle if needed"
+title: "Forecasting the 2024 U.S. Presidential Election: Comparative Support Analysis of Kamala Harris and Donald Trump"
+subtitle: "Predictive Models Indicate a Narrow Advantage for Harris in a Closely Contested Race"
 author: 
-  - First author
-  - Another author
-thanks: "Code and data are available at: [https://github.com/RohanAlexander/starter_folder](https://github.com/RohanAlexander/starter_folder)."
+  - Haowei Fan
+  - Fangning Zhang
+  - Shaotong Li
+thanks: "Code and data are available at: [https://github.com/HaoweiFan0912/US_Election-Forecast/tree/main]."
 date: today
 date-format: long
-abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
+abstract: "This study aggregates polling data to forecast support for 2024 U.S. presidential candidates Kamala Harris and Donald Trump. By applying linear models with adjustments, we identify a modest lead for Harris at 47.6% over Trump’s 43.5%. The findings highlight that carefully weighted polling data provides a clearer view of electoral dynamics, showing how rigorous methodology in forecasting can yield more accurate insights into public opinion trends, aiding informed decision-making in political and economic spheres."
 format: pdf
-number-sections: true
+toc: true           
+toc-title: "Table of Contents" 
+toc-depth: 2    
+number_sections: true    
 bibliography: references.bib
 ---
 ```{r}
@@ -42,15 +46,18 @@ Harris_model <- readRDS(here::here("models/Harris_model.rds"))
 ```
 
 # Introduction
-The U.S. presidential election is a globally significant event, drawing substantial international attention due to its potential impact on economies, international relations, and pressing social issues, including climate change and human rights.  As the world anticipates the 2024 U.S. electoral contest, forecasting the possible outcomes can provide critical insights for policymakers, businesses, and civil society groups. Predicting election outcomes has long been one of the most challenging tasks for political scientists, statisticians, and analysts. This study aims to predict the level of support for leading candidates, specifically Kamala Harris and Donald Trump, using aggregated poll data and statistical modeling.
+The U.S. presidential election has profound implications on a global scale, shaping international relations, economic policy, and key social issues. As the 2024 election approaches, the ability to accurately forecast potential outcomes is essential for policymakers, businesses, and organizations seeking to anticipate shifts in U.S. policy that may affect trade, climate commitments, and strategic alliances [@citeBBC]. Additionally, recent analyses suggest that the election could introduce volatility into financial markets, emphasizing the importance of reliable predictions for strategic planning [@citeEuronews]. However, predicting election outcomes presents significant challenges due to a multitude of influencing factors, such as media influence, public sentiment, and socio-political dynamics, which collectively add complexity to election forecasting [@citeOregon]. Past elections further illustrate that targeted messaging and political events can profoundly impact voter behavior, complicating predictions even further [@citeYale].
 
-To provide a robust prediction, we utilize a "poll-of-polls" approach, combining polling data from multiple organizations at both national and state levels to enhance accuracy and stability in forecasted support. Our analysis applies a multilinear regression model, focusing on key variables like pollster reliability, sample size, and duration, which contribute to the prediction of each candidate's support level. we aim to predict the percentage of support for the main candidates Kamala Harris and Donald Trump.
+This study seeks to address these complexities by examining voter support for the 2024 presidential candidates Kamala Harris and Donald Trump. While substantial polling data exists, current aggregation methods often lack consistency and fail to adequately consider critical factors such as poll reliability and sample size, leading to unreliable predictions. To address this gap, the present study adopts a “poll-of-polls” methodology, drawing from multiple data sources at both national and state levels. Through the application of multiple linear regression models, the study integrates essential variables, including pollster reliability, sample size, and polling duration, to produce a forecast that is both stable and transparent.
 
-The results of our linear model indicate closely matched levels of voter support for both candidates. Donald Trump’s predicted support is approximately 45.2%, while Kamala Harris's predicted support is slightly higher at 45.9%. These findings suggest that, while both candidates maintain stable support, Harris holds a slight advantage. The consistency across both models underlines the importance of accounting for variability in polling methodologies and regional voter bases. 【等result出来再改】
+The estimand in this study represents the expected level of voter support for each primary candidate, Kamala Harris and Donald Trump, based on aggregated polling data across diverse demographics and polling methodologies. This measure aims to capture the central tendency of public opinion, adjusted for polling reliability and sample characteristics, to provide a stable estimate of each candidate's projected support under current conditions. By centering on this estimand, the analysis offers a robust and interpretable forecast applicable for strategic decision-making in both political and economic contexts.
 
-This study is important because it not only forecasts the immediate electoral outcomes but also provides critical insights into the potential global impact of the U.S. presidential election. Predicting election results helps global stakeholders—such as policymakers, investors, and international organizations—prepare for possible changes in U.S. policy, which could significantly affect trade, climate commitments, and foreign relations, thereby influencing global economic stability and strategic alliances. Furthermore, our findings highlight the need for transparency in polling methodologies and emphasize the importance of developing more precise and comprehensive forecasts.
+The findings suggest a slight advantage for Harris, with a predicted support level of 47.6% compared to Trump’s 43.5%. This marginal lead underscores the importance of methodological rigor, as systematically weighting data by reliability yields more consistent and interpretable predictions. The results indicate that while both candidates retain substantial support, polling methods and demographic representation can subtly shift the support dynamics, providing a deeper understanding of the electoral landscape beyond basic polling figures.
 
-This paper is organized as follows: The next section outlines the data collection and filtering processes, detailing the key variables and sources. Following that, we discuss our methodological framework, including the construction of the linear and Bayesian models. In the results section, we present the outcomes of both models, and a discussion explores the broader implications of these findings. Finally, the paper concludes with recommendations for future research and potential applications of these forecasting models in electoral studies. 【最后改结构描述加cross-reference】
+This paper is structured as follows: first, the data collection and filtering processes are outlined, followed by a description of the methodological framework, introducing linear modeling approaches. The results are then presented and analyzed, with a discussion on broader implications. The paper concludes with recommendations for future research and potential applications of these forecasting models in electoral studies.
+
+This project leverages several R packages, including tidyverse[@citeTidyverse], janitor[@citeJanitor], tidyr[@citeTidyr], dplyr[@citeDplyr], lubridate[@citeLubridate], arrow[@citeArrow], patchwork[@citePatchwork], car[@citeCar], kableExtra[@citeKableExtra], gridExtra[@citeGridExtra], moments[@citeMoments], grid[@citeGrid], rstanarm[@citeRstanarm], and testthat[@citeTestthat], to clean, organize, analyze, and visualize data in forecasting voter support for the 2024 U.S. presidential election. These packages support a reproducible and rigorous approach to data management, statistical modeling, and result presentation, ensuring transparency and accuracy throughout the analysis process.
+ 【最后改结构描述加cross-reference】
 
 
 # Data {#sec-data}
@@ -187,35 +194,44 @@ unique_poll_ids <- unique(raw_data$poll_id)
 #| echo: false
 #| label: fig-bv
 #| fig-cap: "Boolean variables"
+
+# Create a list to store the plots
 plots <- list()
-# Create bar charts for 'ranked_choice_reallocated' and 'hypothetical'
+
+# Bar chart for 'ranked_choice_reallocated' with count labels
 plots[["ranked_choice"]] <- ggplot(raw_data, aes(x = ranked_choice_reallocated)) +
   geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
-  labs(title = "Ranked Choice Reallocated", x = "Ranked Choice Reallocated", y = "Count") +
+  geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5, size = 4) +  # Updated count label notation
+  labs(title = "Bar Chart of Ranked Choice Reallocated", x = "Ranked Choice Reallocated", y = "Count") +
   theme_minimal(base_size = 15) +
   theme(
     plot.title = element_text(hjust = 0.5, size = 12),
     axis.title = element_text(size = 10),
     axis.text = element_text(size = 10)
-  )
+  ) +
+  ylim(0, max(table(raw_data$ranked_choice_reallocated)) * 1.2)  # Increase y-axis limit to fit labels
 
+# Bar chart for 'hypothetical' with count labels
 plots[["hypothetical"]] <- ggplot(raw_data, aes(x = hypothetical)) +
   geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
-  labs(title = "Hypothetical", x = "Hypothetical", y = "Count") +
+  geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5, size = 4) +  # Updated count label notation
+  labs(title = "Bar Chart of Hypothetical", x = "Hypothetical", y = "Count") +
   theme_minimal(base_size = 15) +
   theme(
     plot.title = element_text(hjust = 0.5, size = 12),
     axis.title = element_text(size = 10),
     axis.text = element_text(size = 10)
-  )
+  ) +
+  ylim(0, max(table(raw_data$hypothetical)) * 1.2)  # Increase y-axis limit to fit labels
 
 # Combine and print the plots using patchwork
-combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(3, 4), "in")) +
+combined_plot <- wrap_plots(plots, ncol = 2) +
   plot_annotation(
     theme = theme(
       plot.title = element_text(hjust = 0.5, size = 14)
     )
   )
+
 # Print the combined plot
 print(combined_plot)
 
@@ -228,59 +244,69 @@ print(combined_plot)
 #| label: fig-cv
 #| fig-cap: "Catogorical variables"
 
+# Create a list to store the plots
 plots <- list()
-# Find the top 3 most frequent values in 'methodology' and group others as 'Other'
+
+# Top 3 Methodologies with 'Other' grouped
 methodology_counts <- sort(table(raw_data$methodology), decreasing = TRUE)
 top_3_methodologies <- names(methodology_counts)[1:3]
 raw_data$methodology_grouped <- ifelse(raw_data$methodology %in% top_3_methodologies, raw_data$methodology, "Other")
-# Create a bar chart for the grouped 'methodology'
+
+# Create horizontal bar chart for 'methodology'
 plots[["methodology"]] <- ggplot(raw_data, aes(x = methodology_grouped)) +
   geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
-  labs(title = "Top 3 Methodologies and Others", x = "Methodology", y = "Count") +
-  theme_minimal(base_size = 15) +
+  geom_text(stat = "count", aes(label = after_stat(count)), hjust = -0.2, size = 9) +  # Larger count labels
+  labs(title = "Top 3 Methodologies and Others", x = "Count", y = "Methodology") +
+  theme_minimal(base_size = 24) +  # Increase base size for all text elements
   theme(
-    plot.title = element_text(hjust = 0.5, size = 12),
-    axis.title = element_text(size = 10),
-    axis.text = element_text(size = 10)
-  )
+    plot.title = element_text(hjust = 0.5, size = 32, face = "bold"),  # Title font size
+    axis.title = element_text(size = 28),  # Axis title font size
+    axis.text = element_text(size = 24)  # Axis text font size
+  ) +
+  coord_flip()
+
+# Population bar chart
 plots[["population"]] <- ggplot(raw_data, aes(x = population)) +
   geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
-  labs(title = "Population", x = "Population", y = "Count") +
-  theme_minimal(base_size = 15) +
+  geom_text(stat = "count", aes(label = after_stat(count)), hjust = -0.2, size = 9) +  # Larger count labels
+  labs(title = "Population", x = "Count", y = "Population") +
+  theme_minimal(base_size = 24) +  # Increase base size for all text elements
   theme(
-    plot.title = element_text(hjust = 0.5, size = 12),
-    axis.title = element_text(size = 10),
-    axis.text = element_text(size = 10)
-  )
-# Find the top 3 most frequent values in 'answer' and group others as 'Other'
+    plot.title = element_text(hjust = 0.5, size = 32, face = "bold"),  # Title font size
+    axis.title = element_text(size = 28),  # Axis title font size
+    axis.text = element_text(size = 24)  # Axis text font size
+  ) +
+  coord_flip()
+
+# Top 3 Answers with 'Other' grouped
 answer_counts <- sort(table(raw_data$answer), decreasing = TRUE)
 top_3_answer <- names(answer_counts)[1:3]
 raw_data$answer <- ifelse(raw_data$answer %in% top_3_answer, raw_data$answer, "Other")
-# Create a bar chart for the grouped 'answer'
+
+# Create horizontal bar chart for 'answer'
 plots[["answer"]] <- ggplot(raw_data, aes(x = answer)) +
   geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
-  labs(title = "Top 3 answer and Others", x = "answer", y = "Count") +
-  theme_minimal(base_size = 15) +
+  geom_text(stat = "count", aes(label = after_stat(count)), hjust = -0.2, size = 9) +  # Larger count labels
+  labs(title = "Top 3 Answers and Others", x = "Count", y = "Answer") +
+  theme_minimal(base_size = 24) +  # Increase base size for all text elements
   theme(
-    plot.title = element_text(hjust = 0.5, size = 12),
-    axis.title = element_text(size = 10),
-    axis.text = element_text(size = 10)
-  )
-combined_plot <- wrap_plots(plots, ncol = 3, nrow = 1, heights = unit(rep(8, 4), "in")) +
+    plot.title = element_text(hjust = 0.5, size = 32, face = "bold"),  # Title font size
+    axis.title = element_text(size = 28),  # Axis title font size
+    axis.text = element_text(size = 24)  # Axis text font size
+  ) +
+  coord_flip()
+
+# Combine the plots using patchwork
+combined_plot <- wrap_plots(plots, ncol = 1) +
   plot_annotation(
     theme = theme(
-      plot.title = element_text(hjust = 0.5, size = 14)
+      plot.title = element_text(hjust = 0.5, size = 32)
     )
   )
+
 # Print the combined plot
 print(combined_plot)
-```
-以及numerical的variables："numeric_grade"      "pollscore"          "transparency_score" "start_date"         "end_date"        "sample_size" "pct"
-```{r}
-#| warning: false
-#| message: false
-#| echo: false
-numer <- droped_data %>% select(-any_of(catego))
+
 ```
 描述
 ```{r, fig.pos="H", fig.width=18, fig.height=18}
@@ -289,31 +315,47 @@ numer <- droped_data %>% select(-any_of(catego))
 #| echo: false
 #| label: fig-donvp1
 #| fig-cap: "Distribution of numerical varibales part 1"
+
 ### Create Plots for Numeric Variables ###
 # Create a list to store plots
 plots <- list()
-# Loop through selected numeric variables and plot their distributions
+
+# Loop through selected numeric variables and plot their distributions with a line connecting bar tops
 for (variable in names(numer %>% select(numeric_grade, pollscore, transparency_score))) {
+  # Calculate bin counts and midpoints
+  bin_data <- ggplot_build(
+    ggplot(raw_data, aes_string(x = variable)) +
+      geom_histogram(binwidth = 0.5)
+  )$data[[1]]
+  
+  # Calculate the midpoint of each bin for line plotting
+  bin_data <- bin_data %>%
+    mutate(midpoint = (xmin + xmax) / 2)
+  
+  # Create histogram plot with line connecting the bar tops
   plots[[variable]] <- ggplot(raw_data, aes_string(x = variable)) +
     geom_histogram(binwidth = 0.5, fill = "#69b3a2", color = "black", alpha = 0.8) +
     labs(title = paste("Distribution of", variable), x = variable, y = "Frequency") +
-    theme_minimal(base_size = 30) +
+    theme_minimal(base_size = 24) +  # Adjusted base font size for readability
     theme(
-      plot.title = element_text(hjust = 0.5, size = 12),
-      axis.title = element_text(size = 20),
-      axis.text = element_text(size = 20)
+      plot.title = element_text(hjust = 0.5, size = 35, face = "bold"),  # Larger title font size
+      axis.title = element_text(size = 35),  # Axis title font size
+      axis.text = element_text(size = 35)  # Axis text font size
     )
 }
+
 ### Combine and Print Plots ###
-# Combine all individual plots into one using patchwork with 2 columns and 4 rows
-combined_plot <- wrap_plots(plots, ncol = 3, nrow = 1, heights = unit(rep(8, 4), "in")) +
+# Combine all individual plots into one vertical layout
+combined_plot <- wrap_plots(plots, ncol = 1) +
   plot_annotation(
     theme = theme(
-      plot.title = element_text(hjust = 0.5, size = 14)
+      plot.title = element_text(hjust = 0.5, size = 35)
     )
   )
+
 # Print the combined plot
 print(combined_plot)
+
 ```
 描述
 ```{r, fig.pos="H", fig.width=18, fig.height=18}
@@ -322,31 +364,51 @@ print(combined_plot)
 #| echo: false
 #| label: fig-donvp2
 #| fig-cap: "Distribution of numerical varibales part 2"
+
 ### Create Plots for Numeric Variables ###
 # Create a list to store plots
 plots <- list()
+
 # Loop through selected numeric variables and plot their distributions
 for (variable in names(numer %>% select(sample_size, pct))) {
-  plots[[variable]] <- ggplot(raw_data, aes_string(x = variable)) +
-    geom_histogram(binwidth = 5, fill = "#69b3a2", color = "black", alpha = 0.8) +
-    labs(title = paste("Distribution of", variable), x = variable, y = "Frequency") +
-    theme_minimal(base_size = 30) +
-    theme(
-      plot.title = element_text(hjust = 0.5, size = 12),
-      axis.title = element_text(size = 10),
-      axis.text = element_text(size = 10)
-    )
+  if (variable == "sample_size") {
+    # For sample_size, focus on the range 0-20000
+    plots[[variable]] <- ggplot(raw_data, aes_string(x = variable)) +
+      geom_histogram(binwidth = 500, fill = "#69b3a2", color = "black", alpha = 0.8) +
+      xlim(0, 10000) +  # Set x-axis limits to focus on 0-10000 range
+      labs(title = "Distribution of Sample Size (0-10000)", x = variable, y = "Frequency") +
+      theme_minimal(base_size = 24) +
+      theme(
+        plot.title = element_text(hjust = 0.5, size = 35, face = "bold"),  # Larger title font size
+        axis.title = element_text(size = 30),  # Larger axis title font size
+        axis.text = element_text(size = 28)  # Larger axis text font size
+      )
+  } else {
+    # For other variables, keep the full range
+    plots[[variable]] <- ggplot(raw_data, aes_string(x = variable)) +
+      geom_histogram(binwidth = 5, fill = "#69b3a2", color = "black", alpha = 0.8) +
+      labs(title = paste("Distribution of", variable), x = variable, y = "Frequency") +
+      theme_minimal(base_size = 24) +
+      theme(
+        plot.title = element_text(hjust = 0.5, size = 35, face = "bold"),  # Larger title font size
+        axis.title = element_text(size = 30),  # Larger axis title font size
+        axis.text = element_text(size = 28)  # Larger axis text font size
+      )
+  }
 }
+
 ### Combine and Print Plots ###
-# Combine all individual plots into one using patchwork with 2 columns and 4 rows
-combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(8, 8), "in")) +
+# Combine all individual plots into one vertical layout
+combined_plot <- wrap_plots(plots, ncol = 1) +
   plot_annotation(
     theme = theme(
-      plot.title = element_text(hjust = 0.5, size = 14)
+      plot.title = element_text(hjust = 0.5, size = 35)
     )
   )
+
 # Print the combined plot
 print(combined_plot)
+
 ```
 描述
 ```{r, fig.pos="H", fig.width=18, fig.height=18}
@@ -360,30 +422,36 @@ print(combined_plot)
 # Convert start_date and end_date to Date type
 raw_data$start_date <- ymd(raw_data$start_date)
 raw_data$end_date <- ymd(raw_data$end_date)
+
 # Define the date variables to plot
 date_variables <- c("start_date", "end_date")
+
 ### Create Plots for Date Variables ###
-# Loop through selected date variables and plot their distributions
+# Create a list to store plots
 plots <- list()
-for (variable in names(numer %>% select(start_date, end_date))) {
+
+# Loop through selected date variables and plot their distributions with a density curve
+for (variable in date_variables) {
   plots[[variable]] <- ggplot(raw_data, aes_string(x = variable)) +
-    geom_histogram(binwidth = 80, fill = "#69b3a2", color = "black", alpha = 0.8) +
+    geom_histogram(fill = "#69b3a2", color = "black", alpha = 0.8) +  # Keep the original binwidth
     labs(title = paste("Distribution of", variable), x = variable, y = "Frequency") +
-        theme_minimal(base_size = 30) +
+    theme_minimal(base_size = 24) +
     theme(
-      plot.title = element_text(hjust = 0.5, size = 12),
-      axis.title = element_text(size = 10),
-      axis.text = element_text(size = 10)
+      plot.title = element_text(hjust = 0.5, size = 35, face = "bold"),  # Larger title font size
+      axis.title = element_text(size = 30),  # Larger axis title font size
+      axis.text = element_text(size = 28)  # Larger axis text font size
     )
 }
+
 ### Combine and Print Plots ###
-# Combine all individual plots into one using patchwork with 2 columns and 4 rows
-combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(8, 4), "in")) +
+# Arrange the plots vertically without changing their individual orientation
+combined_plot <- wrap_plots(plots, ncol = 1) +
   plot_annotation(
     theme = theme(
-      plot.title = element_text(hjust = 0.5, size = 14)
+      plot.title = element_text(hjust = 0.5, size = 35)
     )
   )
+
 # Print the combined plot
 print(combined_plot)
 
@@ -679,45 +747,6 @@ data2 = train_Trump %>% select("pollscore","transparency_score","sample_size","d
 pairs( data2 , main = "Predictor vs predictor")
 ```
 
-```{r, fig.pos="H", fig.height=10, fig.width=20}
-#| warning: false
-#| message: false
-#| echo: false
-#| label: fig-doditd
-#| fig-cap: "Distribution of durations in training dataset"
-
-plots <- list()
-# Plot a histogram for the 'pct' variable
-plots[["Trump"]]<-ggplot(train_Trump, aes(x = duration)) +
-  geom_histogram(binwidth = 2, fill = "blue", color = "black", alpha = 0.7) +
-  labs(title = "Histogram of duration for Trump", x = "Duration", y = "Frequency")
-plots[["Harris"]]<-ggplot(train_Harris, aes(x = duration)) +
-  geom_histogram(binwidth = 2, fill = "blue", color = "black", alpha = 0.7) +
-  labs(title = "Histogram of duration", x = "Duration", y = "Frequency")
-
-
-### Combine and Print Plots ###
-# Combine all individual plots into one using patchwork with 2 columns and 4 rows
-combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(5, 5), "in")) +
-  plot_annotation(
-    theme = theme(
-      plot.title = element_text(hjust = 0.5, size = 14)
-    )
-  )
-# Print the combined plot
-print(combined_plot)
-
-```
-
-
-
-
-
-
-
-
-
-
 关于categorical的：。。。。。。。。。。。。。。。。
 
 
@@ -921,34 +950,16 @@ kable(harris_vif_df[, 2, drop = FALSE], format = "html", caption = "VIF for Harr
 par(mfrow=c(2,2))
 plot(Harris_model,1)
 plot(Harris_model,2)
+```
+
+```{r}
+
+par(mfrow=c(2,2))
 plot(Trump_model,1)
 plot(Trump_model,2)
 ```
-
-
 然后就是描述一下response variable是normal的，然后numerical variable没有显著关系（这些在打他部分有讲过）
 总结，满足了MLR的条件，说明我们的好
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ```{r,message=FALSE, echo=FALSE,warning=FALSE,fig.height = 10, fig.width=10}
 # Generate predictions using the model
 plots <- list()
@@ -1106,6 +1117,13 @@ Overall, our approach demonstrates how feature engineering and predictive modeli
 
 # Discussion
 
+This paper presents a predictive analysis of voter support for 2024 U.S. presidential candidates Kamala Harris and Donald Trump. Using a “poll-of-polls” approach, it integrates polling data from diverse sources, emphasizing reliability, sample size, and methodology. Linear and Bayesian models were applied to improve prediction accuracy.
+
+The analysis provides two key insights. First, our model predicts a slight advantage for Kamala Harris, with a support estimate of 47.6% compared to Donald Trump’s 43.5%, indicating a competitive but narrow lead. Second, it underscores the impact of poll reliability on predictive accuracy. Traditional methods like live phone surveys show greater accuracy than online methods, reinforcing the importance of reliability-weighted data in improving forecast precision.
+
+This analysis is limited by its use of static variables, which may not capture shifts in public opinion. For instance, major events like debates can influence voter sentiment, yet the model lacks real-time responsiveness. Additionally, aggregating data from different poll methodologies may introduce bias; for example, online panels may skew younger while live phone surveys often favor older demographics. Future work could include real-time data and refined weighting to enhance adaptability and consistency.
+
+Future research could incorporate time series analysis to track evolving voter sentiment and add demographic or economic factors for greater precision. Integrating social media sentiment and machine learning could provide deeper insights into regional voting patterns.
 
 # Appendix
 

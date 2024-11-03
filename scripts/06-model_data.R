@@ -9,10 +9,9 @@
 
 
 #### Workspace setup ####
-library(tidyverse)
+library(arrow)
 
 # Define paths to each candidate's analysis data (training and testing data)
-
 Trump <- read_parquet("data/02-analysis_data/01-training/train_Trump.parquet")
 Harris <- read_parquet("data/02-analysis_data/01-training/train_Harris.parquet")
 
