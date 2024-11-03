@@ -8,7 +8,7 @@ author:
 thanks: "Code and data are available at: [https://github.com/HaoweiFan0912/US_Election-Forecast/tree/main]."
 date: today
 date-format: long
-abstract: "This study aggregates polling data to forecast support for 2024 U.S. presidential candidates Kamala Harris and Donald Trump. By applying linear models with adjustments, we identify a modest lead for Harris at 47.6% over Trump’s 43.5%. The findings highlight that carefully weighted polling data provides a clearer view of electoral dynamics, showing how rigorous methodology in forecasting can yield more accurate insights into public opinion trends, aiding informed decision-making in political and economic spheres."
+abstract: "The United States plays a major role in the global technological and economic landscape, with its political leadership having a significant influence on international technology cooperation and economic relations. This project uses multiple linear regression to predict the outcome of the 2024 U.S. presidential election by extracting and analyzing polling data from polls that nominated the same candidates, providing insights to help stakeholders prepare for potential shifts in U.S. policies. The project predicts that Kamala Harris will narrowly defeat Donald Trump who is predicted to come in second place and presents a straightforward yet effective regression model that does not rely on time-series analysis or external events."
 format: pdf
 toc: true           
 toc-title: "Table of Contents" 
