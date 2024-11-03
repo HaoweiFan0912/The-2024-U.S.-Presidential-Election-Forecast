@@ -1,15 +1,19 @@
 ---
-title: "My title"
-subtitle: "My subtitle if needed"
+title: "Forecasting the 2024 U.S. Presidential Election: Comparative Support Analysis of Kamala Harris and Donald Trump"
+subtitle: "Predictive Models Indicate a Narrow Advantage for Harris in a Closely Contested Race"
 author: 
-  - First author
-  - Another author
-thanks: "Code and data are available at: [https://github.com/RohanAlexander/starter_folder](https://github.com/RohanAlexander/starter_folder)."
+  - Haowei Fan
+  - Fangning Zhang
+  - Shaotong Li
+thanks: "Code and data are available at: [https://github.com/HaoweiFan0912/US_Election-Forecast/tree/main]."
 date: today
 date-format: long
 abstract: "This study aggregates polling data to forecast support for 2024 U.S. presidential candidates Kamala Harris and Donald Trump. By applying linear models with adjustments, we identify a modest lead for Harris at 47.6% over Trump’s 43.5%. The findings highlight that carefully weighted polling data provides a clearer view of electoral dynamics, showing how rigorous methodology in forecasting can yield more accurate insights into public opinion trends, aiding informed decision-making in political and economic spheres."
 format: pdf
-number-sections: true
+toc: true           
+toc-title: "Table of Contents" 
+toc-depth: 2    
+number_sections: true    
 bibliography: references.bib
 ---
 ```{r}
