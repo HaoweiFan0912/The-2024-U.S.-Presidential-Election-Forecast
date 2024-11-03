@@ -50,6 +50,7 @@ The findings suggest a slight advantage for Harris, with a predicted support lev
 
 This paper is structured as follows: first, the data collection and filtering processes are outlined, followed by a description of the methodological framework, introducing linear modeling approaches. The results are then presented and analyzed, with a discussion on broader implications. The paper concludes with recommendations for future research and potential applications of these forecasting models in electoral studies.
 
+This project leverages several R packages, including tidyverse[@citeTidyverse], janitor[@citeJanitor], tidyr[@citeTidyr], dplyr[@citeDplyr], lubridate[@citeLubridate], arrow[@citeArrow], patchwork[@citePatchwork], car[@citeCar], kableExtra[@citeKableExtra], gridExtra[@citeGridExtra], moments[@citeMoments], grid[@citeGrid], rstanarm[@citeRstanarm], and testthat[@citeTestthat], to clean, organize, analyze, and visualize data in forecasting voter support for the 2024 U.S. presidential election. These packages support a reproducible and rigorous approach to data management, statistical modeling, and result presentation, ensuring transparency and accuracy throughout the analysis process.
  【最后改结构描述加cross-reference】
 
 
