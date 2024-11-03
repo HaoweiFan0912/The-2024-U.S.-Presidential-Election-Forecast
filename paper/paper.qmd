@@ -190,35 +190,44 @@ unique_poll_ids <- unique(raw_data$poll_id)
 #| echo: false
 #| label: fig-bv
 #| fig-cap: "Boolean variables"
+
+# Create a list to store the plots
 plots <- list()
-# Create bar charts for 'ranked_choice_reallocated' and 'hypothetical'
+
+# Bar chart for 'ranked_choice_reallocated' with count labels
 plots[["ranked_choice"]] <- ggplot(raw_data, aes(x = ranked_choice_reallocated)) +
   geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
-  labs(title = "Ranked Choice Reallocated", x = "Ranked Choice Reallocated", y = "Count") +
+  geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5, size = 4) +  # Updated count label notation
+  labs(title = "Bar Chart of Ranked Choice Reallocated", x = "Ranked Choice Reallocated", y = "Count") +
   theme_minimal(base_size = 15) +
   theme(
     plot.title = element_text(hjust = 0.5, size = 12),
     axis.title = element_text(size = 10),
     axis.text = element_text(size = 10)
-  )
+  ) +
+  ylim(0, max(table(raw_data$ranked_choice_reallocated)) * 1.2)  # Increase y-axis limit to fit labels
 
+# Bar chart for 'hypothetical' with count labels
 plots[["hypothetical"]] <- ggplot(raw_data, aes(x = hypothetical)) +
   geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
-  labs(title = "Hypothetical", x = "Hypothetical", y = "Count") +
+  geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5, size = 4) +  # Updated count label notation
+  labs(title = "Bar Chart of Hypothetical", x = "Hypothetical", y = "Count") +
   theme_minimal(base_size = 15) +
   theme(
     plot.title = element_text(hjust = 0.5, size = 12),
     axis.title = element_text(size = 10),
     axis.text = element_text(size = 10)
-  )
+  ) +
+  ylim(0, max(table(raw_data$hypothetical)) * 1.2)  # Increase y-axis limit to fit labels
 
 # Combine and print the plots using patchwork
-combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(3, 4), "in")) +
+combined_plot <- wrap_plots(plots, ncol = 2) +
   plot_annotation(
     theme = theme(
       plot.title = element_text(hjust = 0.5, size = 14)
     )
   )
+
 # Print the combined plot
 print(combined_plot)
 
@@ -231,59 +240,69 @@ print(combined_plot)
 #| label: fig-cv
 #| fig-cap: "Catogorical variables"
 
+# Create a list to store the plots
 plots <- list()
-# Find the top 3 most frequent values in 'methodology' and group others as 'Other'
+
+# Top 3 Methodologies with 'Other' grouped
 methodology_counts <- sort(table(raw_data$methodology), decreasing = TRUE)
 top_3_methodologies <- names(methodology_counts)[1:3]
 raw_data$methodology_grouped <- ifelse(raw_data$methodology %in% top_3_methodologies, raw_data$methodology, "Other")
-# Create a bar chart for the grouped 'methodology'
+
+# Create horizontal bar chart for 'methodology'
 plots[["methodology"]] <- ggplot(raw_data, aes(x = methodology_grouped)) +
   geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
-  labs(title = "Top 3 Methodologies and Others", x = "Methodology", y = "Count") +
-  theme_minimal(base_size = 15) +
+  geom_text(stat = "count", aes(label = after_stat(count)), hjust = -0.2, size = 9) +  # Larger count labels
+  labs(title = "Top 3 Methodologies and Others", x = "Count", y = "Methodology") +
+  theme_minimal(base_size = 24) +  # Increase base size for all text elements
   theme(
-    plot.title = element_text(hjust = 0.5, size = 12),
-    axis.title = element_text(size = 10),
-    axis.text = element_text(size = 10)
-  )
+    plot.title = element_text(hjust = 0.5, size = 32, face = "bold"),  # Title font size
+    axis.title = element_text(size = 28),  # Axis title font size
+    axis.text = element_text(size = 24)  # Axis text font size
+  ) +
+  coord_flip()
+
+# Population bar chart
 plots[["population"]] <- ggplot(raw_data, aes(x = population)) +
   geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
-  labs(title = "Population", x = "Population", y = "Count") +
-  theme_minimal(base_size = 15) +
+  geom_text(stat = "count", aes(label = after_stat(count)), hjust = -0.2, size = 9) +  # Larger count labels
+  labs(title = "Population", x = "Count", y = "Population") +
+  theme_minimal(base_size = 24) +  # Increase base size for all text elements
   theme(
-    plot.title = element_text(hjust = 0.5, size = 12),
-    axis.title = element_text(size = 10),
-    axis.text = element_text(size = 10)
-  )
-# Find the top 3 most frequent values in 'answer' and group others as 'Other'
+    plot.title = element_text(hjust = 0.5, size = 32, face = "bold"),  # Title font size
+    axis.title = element_text(size = 28),  # Axis title font size
+    axis.text = element_text(size = 24)  # Axis text font size
+  ) +
+  coord_flip()
+
+# Top 3 Answers with 'Other' grouped
 answer_counts <- sort(table(raw_data$answer), decreasing = TRUE)
 top_3_answer <- names(answer_counts)[1:3]
 raw_data$answer <- ifelse(raw_data$answer %in% top_3_answer, raw_data$answer, "Other")
-# Create a bar chart for the grouped 'answer'
+
+# Create horizontal bar chart for 'answer'
 plots[["answer"]] <- ggplot(raw_data, aes(x = answer)) +
   geom_bar(fill = "#69b3a2", color = "black", alpha = 0.8) +
-  labs(title = "Top 3 answer and Others", x = "answer", y = "Count") +
-  theme_minimal(base_size = 15) +
+  geom_text(stat = "count", aes(label = after_stat(count)), hjust = -0.2, size = 9) +  # Larger count labels
+  labs(title = "Top 3 Answers and Others", x = "Count", y = "Answer") +
+  theme_minimal(base_size = 24) +  # Increase base size for all text elements
   theme(
-    plot.title = element_text(hjust = 0.5, size = 12),
-    axis.title = element_text(size = 10),
-    axis.text = element_text(size = 10)
-  )
-combined_plot <- wrap_plots(plots, ncol = 3, nrow = 1, heights = unit(rep(8, 4), "in")) +
+    plot.title = element_text(hjust = 0.5, size = 32, face = "bold"),  # Title font size
+    axis.title = element_text(size = 28),  # Axis title font size
+    axis.text = element_text(size = 24)  # Axis text font size
+  ) +
+  coord_flip()
+
+# Combine the plots using patchwork
+combined_plot <- wrap_plots(plots, ncol = 1) +
   plot_annotation(
     theme = theme(
-      plot.title = element_text(hjust = 0.5, size = 14)
+      plot.title = element_text(hjust = 0.5, size = 32)
     )
   )
+
 # Print the combined plot
 print(combined_plot)
-```
-以及numerical的variables："numeric_grade"      "pollscore"          "transparency_score" "start_date"         "end_date"        "sample_size" "pct"
-```{r}
-#| warning: false
-#| message: false
-#| echo: false
-numer <- droped_data %>% select(-any_of(catego))
+
 ```
 描述
 ```{r, fig.pos="H", fig.width=18, fig.height=18}
@@ -292,31 +311,47 @@ numer <- droped_data %>% select(-any_of(catego))
 #| echo: false
 #| label: fig-donvp1
 #| fig-cap: "Distribution of numerical varibales part 1"
+
 ### Create Plots for Numeric Variables ###
 # Create a list to store plots
 plots <- list()
-# Loop through selected numeric variables and plot their distributions
+
+# Loop through selected numeric variables and plot their distributions with a line connecting bar tops
 for (variable in names(numer %>% select(numeric_grade, pollscore, transparency_score))) {
+  # Calculate bin counts and midpoints
+  bin_data <- ggplot_build(
+    ggplot(raw_data, aes_string(x = variable)) +
+      geom_histogram(binwidth = 0.5)
+  )$data[[1]]
+  
+  # Calculate the midpoint of each bin for line plotting
+  bin_data <- bin_data %>%
+    mutate(midpoint = (xmin + xmax) / 2)
+  
+  # Create histogram plot with line connecting the bar tops
   plots[[variable]] <- ggplot(raw_data, aes_string(x = variable)) +
     geom_histogram(binwidth = 0.5, fill = "#69b3a2", color = "black", alpha = 0.8) +
     labs(title = paste("Distribution of", variable), x = variable, y = "Frequency") +
-    theme_minimal(base_size = 30) +
+    theme_minimal(base_size = 24) +  # Adjusted base font size for readability
     theme(
-      plot.title = element_text(hjust = 0.5, size = 12),
-      axis.title = element_text(size = 20),
-      axis.text = element_text(size = 20)
+      plot.title = element_text(hjust = 0.5, size = 35, face = "bold"),  # Larger title font size
+      axis.title = element_text(size = 35),  # Axis title font size
+      axis.text = element_text(size = 35)  # Axis text font size
     )
 }
+
 ### Combine and Print Plots ###
-# Combine all individual plots into one using patchwork with 2 columns and 4 rows
-combined_plot <- wrap_plots(plots, ncol = 3, nrow = 1, heights = unit(rep(8, 4), "in")) +
+# Combine all individual plots into one vertical layout
+combined_plot <- wrap_plots(plots, ncol = 1) +
   plot_annotation(
     theme = theme(
-      plot.title = element_text(hjust = 0.5, size = 14)
+      plot.title = element_text(hjust = 0.5, size = 35)
     )
   )
+
 # Print the combined plot
 print(combined_plot)
+
 ```
 描述
 ```{r, fig.pos="H", fig.width=18, fig.height=18}
@@ -325,31 +360,51 @@ print(combined_plot)
 #| echo: false
 #| label: fig-donvp2
 #| fig-cap: "Distribution of numerical varibales part 2"
+
 ### Create Plots for Numeric Variables ###
 # Create a list to store plots
 plots <- list()
+
 # Loop through selected numeric variables and plot their distributions
 for (variable in names(numer %>% select(sample_size, pct))) {
-  plots[[variable]] <- ggplot(raw_data, aes_string(x = variable)) +
-    geom_histogram(binwidth = 5, fill = "#69b3a2", color = "black", alpha = 0.8) +
-    labs(title = paste("Distribution of", variable), x = variable, y = "Frequency") +
-    theme_minimal(base_size = 30) +
-    theme(
-      plot.title = element_text(hjust = 0.5, size = 12),
-      axis.title = element_text(size = 10),
-      axis.text = element_text(size = 10)
-    )
+  if (variable == "sample_size") {
+    # For sample_size, focus on the range 0-20000
+    plots[[variable]] <- ggplot(raw_data, aes_string(x = variable)) +
+      geom_histogram(binwidth = 500, fill = "#69b3a2", color = "black", alpha = 0.8) +
+      xlim(0, 10000) +  # Set x-axis limits to focus on 0-10000 range
+      labs(title = "Distribution of Sample Size (0-10000)", x = variable, y = "Frequency") +
+      theme_minimal(base_size = 24) +
+      theme(
+        plot.title = element_text(hjust = 0.5, size = 35, face = "bold"),  # Larger title font size
+        axis.title = element_text(size = 30),  # Larger axis title font size
+        axis.text = element_text(size = 28)  # Larger axis text font size
+      )
+  } else {
+    # For other variables, keep the full range
+    plots[[variable]] <- ggplot(raw_data, aes_string(x = variable)) +
+      geom_histogram(binwidth = 5, fill = "#69b3a2", color = "black", alpha = 0.8) +
+      labs(title = paste("Distribution of", variable), x = variable, y = "Frequency") +
+      theme_minimal(base_size = 24) +
+      theme(
+        plot.title = element_text(hjust = 0.5, size = 35, face = "bold"),  # Larger title font size
+        axis.title = element_text(size = 30),  # Larger axis title font size
+        axis.text = element_text(size = 28)  # Larger axis text font size
+      )
+  }
 }
+
 ### Combine and Print Plots ###
-# Combine all individual plots into one using patchwork with 2 columns and 4 rows
-combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(8, 8), "in")) +
+# Combine all individual plots into one vertical layout
+combined_plot <- wrap_plots(plots, ncol = 1) +
   plot_annotation(
     theme = theme(
-      plot.title = element_text(hjust = 0.5, size = 14)
+      plot.title = element_text(hjust = 0.5, size = 35)
     )
   )
+
 # Print the combined plot
 print(combined_plot)
+
 ```
 描述
 ```{r, fig.pos="H", fig.width=18, fig.height=18}
@@ -363,30 +418,36 @@ print(combined_plot)
 # Convert start_date and end_date to Date type
 raw_data$start_date <- ymd(raw_data$start_date)
 raw_data$end_date <- ymd(raw_data$end_date)
+
 # Define the date variables to plot
 date_variables <- c("start_date", "end_date")
+
 ### Create Plots for Date Variables ###
-# Loop through selected date variables and plot their distributions
+# Create a list to store plots
 plots <- list()
-for (variable in names(numer %>% select(start_date, end_date))) {
+
+# Loop through selected date variables and plot their distributions with a density curve
+for (variable in date_variables) {
   plots[[variable]] <- ggplot(raw_data, aes_string(x = variable)) +
-    geom_histogram(binwidth = 80, fill = "#69b3a2", color = "black", alpha = 0.8) +
+    geom_histogram(fill = "#69b3a2", color = "black", alpha = 0.8) +  # Keep the original binwidth
     labs(title = paste("Distribution of", variable), x = variable, y = "Frequency") +
-        theme_minimal(base_size = 30) +
+    theme_minimal(base_size = 24) +
     theme(
-      plot.title = element_text(hjust = 0.5, size = 12),
-      axis.title = element_text(size = 10),
-      axis.text = element_text(size = 10)
+      plot.title = element_text(hjust = 0.5, size = 35, face = "bold"),  # Larger title font size
+      axis.title = element_text(size = 30),  # Larger axis title font size
+      axis.text = element_text(size = 28)  # Larger axis text font size
     )
 }
+
 ### Combine and Print Plots ###
-# Combine all individual plots into one using patchwork with 2 columns and 4 rows
-combined_plot <- wrap_plots(plots, ncol = 2, nrow = 1, heights = unit(rep(8, 4), "in")) +
+# Arrange the plots vertically without changing their individual orientation
+combined_plot <- wrap_plots(plots, ncol = 1) +
   plot_annotation(
     theme = theme(
-      plot.title = element_text(hjust = 0.5, size = 14)
+      plot.title = element_text(hjust = 0.5, size = 35)
     )
   )
+
 # Print the combined plot
 print(combined_plot)
 
