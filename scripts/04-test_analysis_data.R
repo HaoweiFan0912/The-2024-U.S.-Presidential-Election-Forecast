@@ -1,11 +1,11 @@
 #### Preamble ####
-# Purpose: Tests... [...UPDATE THIS...]
-# Author: Rohan Alexander [...UPDATE THIS...]
-# Date: 26 September 2024 [...UPDATE THIS...]
-# Contact: rohan.alexander@utoronto.ca [...UPDATE THIS...]
+# Purpose: test on the analysis data for validation
+# Author: Haowei Fan, Fangning Zhang, Shaotong Li
+# Date: 13 October 2024
+# Contact: haowei.fan@mail.utoronto.ca
 # License: MIT
-# Pre-requisites: [...UPDATE THIS...]
-# Any other information needed? [...UPDATE THIS...]
+# Pre-requisites: 02-analysis_data saved and loaded
+# Any other information needed? None
 
 
 
