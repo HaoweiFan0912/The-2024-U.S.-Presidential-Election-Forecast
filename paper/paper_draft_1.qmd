@@ -830,6 +830,9 @@ trump_vif <- vif(Trump_model_1)
 trump_vif_df <- as.data.frame(trump_vif)
 trump_vif_df$Variable <- rownames(trump_vif_df)
 
+# Merge the two VIF data frames by "Variable", adding suffixes to differentiate columns
+combined_vif_df <- merge(harris_vif_df, trump_vif_df, by = "Variable", suffixes = c("_Harris", "_Trump"))
+
 # Select only the necessary columns: "Variable", "GVIF_Harris", and "GVIF_Trump"
 combined_vif_table <- combined_vif_df[, c("Variable", "GVIF_Harris", "GVIF_Trump")]
 
@@ -1025,62 +1028,53 @@ Future research could incorporate time series analysis to track evolving voter s
 
 # Appendix
 
-## Analysis of YouGov Pollster Methodology
+In this appendix, we provide a deep-dive analysis of the methodology employed by YouGov, one of the pollsters included in our sample. YouGov is an international online research data and analytics technology group. It is a leading platform for online survey, which has a continuously growing dataset of over 27 million registered members. This pollster has a 3.0 grade according to FiveThirtyEight, which is the highest score. This analysis covers key aspects of YouGov's survey methodology, highlighting its strengths, weaknesses, and the unique features of its approach.
 
-In this appendix, we provide a deep-dive analysis of the methodology employed by YouGov, one of the pollsters included in our sample. YouGov is an international online research data and analytics technology group. It is a leading platform for online survey, which has a continuously growing dataset of over 27 million registered members. This pollster has a 3.0 grade according to FiveThirtyEight, which is the highest score. This analysis covers key aspects of YouGov's survey methodology, highlighting its strengths, weaknesses, and the unique features of its approach.
+#### Population, Sample Frame, and Recruitment
 
-### Population, Frame, and Sample
+YouGov utilizes an online panel consisting of U.S. adults. Respondents are chosen based on non-probability sampling, meaning not everyone in the population has an equal chance of being selected. However, the sample is adjusted using statistical weighting to represent the target population better. The sampling frame includes individuals who sign up for surveys, representing diverse demographics, though there may be coverage bias for those with limited internet access.
 
-YouGov utilizes an online panel to collect survey responses, with participants drawn from a broad population base, which typically comprises all U.S. adults citizens. Respondents are chosen based on a non-probability sampling, which means not everyone in the population has an equal chance of being selected. However, the sample is adjusted using statistical weighting to better represent the target population. The sampling frame consists of individuals who have signed up to participate in surveys, representing a range of demographic characteristics. However, as an online panel, there may be limitations regarding coverage bias, particularly for individuals with limited internet access.
+Participants are recruited through online advertisements and other digital marketing techniques, with surveys offered in multiple languages to increase inclusivity. YouGov collects information such as email and IP addresses during panel registration, and quality checks—like monitoring survey completion time and answer consistency—are performed to ensure data integrity. Respondents who fail these checks are removed.
 
-### Sample Recruitment
-
-YouGov recruits participants through online advertisements and other digital marketing techniques,  with surveys offers surveys in multiple languages. The recruitment process is designed to ensure that the panel is as representative as possible. For instance, YouGov collects information such as email addresses and IP addresses when new members join the panel. Additionally, YouGov monitors survey completion time and answer consistency to ensure the data is accurate. Respondents who fail quality checks are removed.
-
-### Sampling Approach and Trade-offs
-
+#### Sampling Approach and Handling Non-response
 YouGov employs a form of quota sampling combined with weighting adjustments to make the sample representative of the target population. To ensure representativeness, YouGov selects respondents based on key demographic characteristics such as age, gender, race, education, and voting behavior. These characteristics are used to set quotas, and the sample is adjusted with statistical weighting to align with the distribution of these characteristics in the target population. For example, if a particular demographic group is underrepresented in the sample, their responses are given greater weight to correct the imbalance. One trade-off of this method is that, although it helps improve representativeness, it may not fully eliminate selection bias due to the reliance on an online panel, which can lead to overrepresentation or underrepresentation of certain groups. Additionally, the process of weighting adjustments may introduce additional errors if the weights are inaccurate or if certain groups are given disproportionately high weights, leading to increased variability and potential bias in the final results.
-
-### Handling Non-response
 
 Non-response is managed by using statistical weighting to adjust the sample to more closely reflect the demographic makeup of the target population. While this helps mitigate some of the biases associated with non-response, it cannot fully account for differences between respondents and non-respondents, especially when non-response is correlated with key survey variables.
 
-### Strengths and Weaknesses of the Questionnaire
+
+#### Strengths and Weaknesses of the Questionnaire
 
 The YouGov questionnaire is well-designed to capture a wide range of attitudes and behaviors. The use of standardized questions ensures consistency across surveys, allowing for longitudinal analysis. However, as an online survey, there is the risk of respondents providing socially desirable answers or rushing through the survey without providing thoughtful responses. Additionally, the format may limit the depth of responses compared to in-person interviews.
 
 Overall, YouGov's methodology provides a cost-effective and timely approach to data collection, particularly useful for understanding trends across large populations. However, the use of an online panel introduces certain limitations that must be acknowledged when interpreting the results.
 
-## Ideal Methodology and Survey for Predicting the U.S. Presidential Election
+
+Appendix: Ideal Methodology and Survey for Predicting the U.S. Presidential Election
 
 ### Budget Overview
-With a budget of $100,000, the goal is to design an efficient and representative method for predicting the U.S. presidential election. This methodology will include sampling strategies, respondent recruitment, data validation, poll aggregation, and survey implementation details.
+With a budget of $100,000, the goal is to design an efficient and representative method for predicting the U.S. presidential election. This methodology will include sampling strategies, respondent recruitment, data validation, poll aggregation, and survey implementation details. The budget allocation as follow:
 
-### Sampling Methodology
-A stratified sampling approach will be used to ensure diversity and representation. The population will be divided into relevant strata such as age, gender, geographic region, race, and political affiliation. This approach ensures that each subgroup is adequately represented, thereby reducing sampling bias.
-
-### Respondent Recruitment
-Respondents will be recruited through online panels. Partnerships with established survey platforms and third-party providers will help reach a broad and representative group of participants, such as through platforms like Instagram, YouTube, and various news websites. Small monetary compensation or gift cards will be offered as incentives to encourage participation. Additional incentives will be provided to underrepresented groups, such as individuals with lower educational attainment or residents of rural areas, to ensure more inclusive recruitment. The aim is for a sample size of approximately 10,000 respondents, which would achieve a margin of error of ±1% at a 95% confidence level.
-
-### Data Validation
-Data validation will involve cross-referencing respondent demographic information with census data to confirm representativeness. Additionally, responses will be reviewed for accuracy, and suspicious or incomplete answers will be flagged for further inspection. Responses completed too quickly or that include repeated answers such as "prefer not to say" or "other" will be discarded. IP addresses will be tracked to prevent duplicate submissions.
-
-### Poll Aggregation and Methodology Features
-Once all responses are collected, weights will be applied according to electoral demographics and voter turnout to ensure the sample represents the U.S. population. Poll aggregation will also involve adjustments for known biases, such as overreporting in certain demographic groups or historical voting trends. Bayesian updating will be used to refine predictions continuously as more data becomes available.
-
-### Survey Implementation
-The survey will be implemented using Google Forms, which allows for easy distribution and data collection. The survey will include questions related to voter preferences, key issues, and demographic information. Questions will be designed to minimize leading language and provide a range of response options to avoid bias. Keeping the survey brief (approximately 5 minutes with 12 questions) will help maintain respondent focus.
-
-### Budget Allocation
 - $60K for Recruitment Costs and Survey Platform Fees, including advertising
 - $10K for respondent incentives
 - $20K for data processing, weighting, and modeling
 - $10K for data security and administrative costs
 
+### Sampling Methodology and Respondent Recruitment
+
+To ensure diversity and representation, a stratified sampling approach will be used. The population will be divided into relevant strata, including age, gender, geographic region, race, and political affiliation, ensuring each subgroup is adequately represented and reducing sampling bias. Respondents will be recruited through partnerships with established survey platforms and third-party providers to reach a broad group of participants across platforms like Instagram, YouTube, and news websites. Incentives such as small monetary compensation or gift cards will encourage participation, with additional rewards targeted at underrepresented groups (e.g., individuals with lower educational attainment or rural residents) to enhance inclusivity. The target sample size is approximately 10,000 respondents, achieving a margin of error of ±1% at a 95% confidence level.
+
+### Data Collection, Validation, and Poll Aggregation
+
+The survey will be implemented using Google Forms to facilitate easy distribution and data collection, featuring questions on voter preferences, key issues, and demographic information. Questions are carefully crafted to minimize leading language and provide diverse response options to avoid bias, with a survey length of about 5 minutes (12 questions) to maintain focus. Data validation will involve cross-referencing respondent demographics with census data for representativeness, while responses will be checked for accuracy, with suspicious or incomplete entries flagged for review. Responses completed too quickly or with excessive "prefer not to say" or "other" selections will be discarded, and IP addresses will be tracked to prevent duplicate submissions. 
+
+Once data collection is complete, weights will be applied according to electoral demographics and voter turnout trends to mirror the U.S. population. Adjustments will be made for known biases, such as overreporting in certain demographic groups or historical voting patterns. Bayesian updating will be employed to refine predictions as new data becomes available, ensuring continuous accuracy.
+
+
 ### Survey Link and Copy
-The Google Forms survey link will be included here: https://docs.google.com/forms/d/e/1FAIpQLSdcd_neJf83lJMZGzmcUcPkDd-R1vPk98gPIDsD4KC_X6T8tQ/viewform. 
+The Google Forms survey link will be included here: https://forms.gle/caLYFxsKkU5oQkXB8. 
 
 The survey questions are listed below: 
+
 1. **What is your age group?** 
    - 18-24
    - 25-34
@@ -1260,5 +1254,42 @@ print(created_at_plot)
 
 ```
 
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-dkpv
+#| tbl-cap: "Descriptions of Key Polling Variables"
 
+library(knitr)
+
+# Data frame with selected variables and descriptions only
+variable_descriptions <- data.frame(
+  Variable = c("poll_id", "pollster_id", "pollster", "sponsor_ids", "pollscore", "methodology", 
+               "transparency_score", "state", "start_date", "end_date", "sample_size", 
+               "population", "created_at", "ranked_choice_reallocated", "hypothetical"),
+  Description = c(
+    "Unique identifier for each poll conducted.",
+    "Unique identifier for the polling organization.",
+    "Name of the polling organization.",
+    "Unique identifier(s) for the sponsor(s).",
+    "A numeric value representing pollster reliability score.",
+    "Method used to conduct the poll.",
+    "Score reflecting pollster’s transparency.",
+    "State where poll was conducted or focused.",
+    "Date when the poll started.",
+    "Date when the poll ended.",
+    "Total number of respondents.",
+    "Description of respondent group.",
+    "Timestamp when poll data was created.",
+    "Indicates if ranked-choice reallocations were applied.",
+    "Indicates if poll is about a hypothetical match-up."
+  )
+)
+
+# Display the table with only Variable and Description columns
+kable(variable_descriptions)
+
+
+```
 
