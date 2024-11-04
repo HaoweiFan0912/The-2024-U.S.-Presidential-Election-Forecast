@@ -8,7 +8,7 @@ author:
 thanks: "Code and data are available at: [https://github.com/HaoweiFan0912/US_Election-Forecast/tree/main]."
 date: today
 date-format: long
-abstract: "The United States plays a major role in the global technological and economic landscape, with its political leadership having a significant influence on international technology cooperation and economic relations. This project uses multiple linear regression to predict the outcome of the 2024 U.S. presidential election by extracting and analyzing polling data from polls that nominated the same candidates, providing insights to help stakeholders prepare for potential shifts in U.S. policies. The project predicts that Kamala Harris will secure 47.6% of the vote over Donald Trump's 43.5% and presents a straightforward yet effective regression model that does not rely on time-series analysis or external events."
+abstract: "The United States plays a major role in the global technological and economic landscape, with its political leadership having a significant influence on international technology cooperation and economic relations. This project uses multiple linear regression to predict the outcome of the 2024 U.S. presidential election by extracting and analyzing polling data from polls that nominated the same candidates, providing direction to help stakeholders prepare for potential shifts in U.S. policies. The project predicts that Kamala Harris will secure 47.6% of the vote over Donald Trump's 43.5% and presents a straightforward yet effective regression model that does not rely on time-series analysis or external events."
 format: pdf
 toc-depth: 2    
 number-sections: true
@@ -21,26 +21,41 @@ bibliography: references.bib
 #| warning: false
 #| message: false
 #| echo: false
+#### Install packages ####
+required_packages <- c("tidyverse","knitr","dplyr","arrow","patchwork","car","kableExtra","gridExtra","moments")
+for (pkg in required_packages) {
+  if (!requireNamespace(pkg,quietly = TRUE)) {
+    install.packages(pkg)
+  }
+}
+
+```
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+#| echo: false
 #### Workspace setup ####
-install.packages("tidyverse")
+
 library(tidyverse)
-install.packages("knitr")
+
 library(knitr)
-install.packages("dplyr")
+
 library(dplyr)
-install.packages("arrow")
+
 library(arrow)
-install.packages("patchwork")
+
 library(patchwork)
-install.packages("car")
+
 library(car)
-install.packages("kableExtra")
+
 library(kableExtra)
-install.packages("gridExtra")
+
 library(gridExtra)
-install.packages("moments")
+
 library(moments)
-install.packages("grid")
+
 library(grid)
 set.seed(912)
 #### Read data ####
