@@ -4,64 +4,10 @@
 
 This README provides a structured guide to the project's organization, data sources, processing scripts, and modeling results for predicting candidate support in the 2024 U.S. presidential election. The directory structure includes simulated, raw, and cleaned data, along with model files, scripts, and supporting documentation. Key directories and files are described to facilitate navigation and understanding of the project workflow, from data simulation and preprocessing to model training and evaluation. Additionally, the README outlines the usage of large language models (LLMs) in generating code snippets, documentation, and analysis explanations.
 
-## Directory Structure
 
-The repo is structured as:
+## Project Structure
 
-```{kotlin}
-├── data/
-│   ├── 00-simulated_data/
-│   │   ├── simulated_candidate_1.parquet
-│   │   ├── simulated_candidate_2.parquet
-│   │   └── simulated_candidate_3.parquet
-│   ├── 01-raw_data/
-│   │   └── raw_data.csv
-│   ├── 02-analysis_data/
-│   │   ├── 00-full/
-│   │   │   ├── full_Harris.parquet
-│   │   │   └── full_Trump.parquet
-│   │   ├── 01-training/
-│   │   │   ├── train_Harris.parquet
-│   │   │   └── train_Trump.parquet
-│   │   └── 02-testing/
-│   │       ├── test_Harris.parquet
-│   │       └── test_Trump.parquet
-│   └── 03-cleaned_data/
-│           ├── Trump_cleaned_data.parquet
-│           ├── Harris_cleaned_data.parquet
-│           └── ...
-├── models/
-│   ├── Desantis_model.rds
-│   ├── Harris_model.rds
-│   └── Trump_model.rds
-├── other/
-│   ├── llm_usage/
-│   │   ├── 01-Model
-│   │   ├── 02-Latex
-│   │   └── 03-Plots_and_tables
-│   ├── sketches/
-│   └── variables_descriptions/
-├── paper/
-│   ├── paper_files/
-│   ├── paper.qmd
-│   └── paper.pdf
-├── scripts/
-│   ├── 00-simulate_data.R
-│   ├── 01-test_simulated_data.R
-│   ├── 02-download_data.R
-│   ├── 03-clean_data.R
-│   ├── 04-test_analysis_data.R
-│   ├── 05-exploratory_data_analysis.qmd
-│   ├── 06-model_data.R
-│   └── 07-replications.R
-├── README.md
-└── The-2024-U.S.-Presidential-Election-Forecast.Rproj
-
-```
-
-## Contents
-
-### 1.data
+### data
 
 This directory contains all data files used in the project.
 
@@ -101,7 +47,7 @@ This directory contains all data files used in the project.
 
 -   `candidate_name_cleaned_data.parquet`: Multiple cleaned data for individual candidates.
 
-### 2. models
+### models
 
 This directory contains the trained models for each candidate.
 
@@ -109,7 +55,7 @@ This directory contains the trained models for each candidate.
 -   `Harris_model.rds`: Trained model for Harris.
 -   `Trump_model.rds`: Trained model for Trump.
 
-### 3. other
+### other
 
 Contains auxiliary files and documentation.
 
@@ -123,7 +69,7 @@ Contains auxiliary files and documentation.
 
 #### `variables_descriptions/`: This folder includes detailed descriptions of the variables used in the dataset.
 
-### 4. paper
+### paper
 
 This directory includes files related to the research paper.
 
@@ -132,7 +78,7 @@ This directory includes files related to the research paper.
 -   `paper.qmd`: Quarto document source file for the paper.
 -   `paper.pdf`: Final version of the research paper in PDF format.
 
-### 5. scripts
+### scripts
 
 R scripts used for data simulation, processing, model training, testing, and replication.
 
@@ -145,7 +91,7 @@ R scripts used for data simulation, processing, model training, testing, and rep
 -   `06-model_data.R`: Script for model training and evaluation.
 -   `07-replications.R`: Script to replicate key results in the analysis.
 
-### 6.Project File
+### Project File
 
 `The-2024-U.S.-Presidential-Election-Forecast.Rproj`: R project file for setting up the project environment.
 

@@ -10,12 +10,11 @@
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 #### Workspace setup ####
 library(tidyverse)
-library(rstanarm)
 library(patchwork)
 library(moments)
 raw_data <- read_csv(here::here("data/01-raw_data/raw_data.csv"))
-Trump_test <- read_csv(here::here("data/02-analysis_data/02-Testing/test_Trump.parquet"))
-Harris_test <- read_csv(here::here("data/02-analysis_data/02-Testing/test_Harris.parquet"))
+Trump_test <- read_parquet(here::here("data/02-analysis_data/02-Testing/test_Trump.parquet"))
+Harris_test <- read_parquet(here::here("data/02-analysis_data/02-Testing/test_Harris.parquet"))
 ```
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # Get unique pollster IDs
