@@ -8,6 +8,9 @@
 # Any other information needed? None
 
 #### Setup ####
+# install required packages
+install.packages("tidyverse")
+install.packages("arrow")
 # Load required libraries
 library(tidyverse)
 library(arrow)
