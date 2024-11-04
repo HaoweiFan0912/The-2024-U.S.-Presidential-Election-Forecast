@@ -1117,9 +1117,9 @@ Overall, our approach demonstrates how feature engineering and predictive modeli
 
 # Discussion
 
-This paper presents a predictive analysis of voter support for 2024 U.S. presidential candidates Kamala Harris and Donald Trump. Using a “poll-of-polls” approach, it integrates polling data from diverse sources, emphasizing reliability, sample size, and methodology. Linear and Bayesian models were applied to improve prediction accuracy.
+This study employs a multiple linear regression model to analyze polling data, aiming to forecast public support for U.S. 2024 presidential election candidates Kamala Harris and Donald Trump.By identifying key determinants of polling accuracy, this analysis predicts a slight lead for Kamala Harris with 47.6% support over Donald Trump’s 43.5%.
 
-The analysis provides two key insights. First, our model predicts a slight advantage for Kamala Harris, with a support estimate of 47.6% compared to Donald Trump’s 43.5%, indicating a competitive but narrow lead. Second, it underscores the impact of poll reliability on predictive accuracy. Traditional methods like live phone surveys show greater accuracy than online methods, reinforcing the importance of reliability-weighted data in improving forecast precision.
+Findings reveal that transparency and demographic representation are essential to reliable election forecasts. Polls with higher transparency scores yield more accurate predictions, emphasizing the importance of clear polling practices. Variations in sample size and population type also underscore the need for representative sampling to capture genuine voter sentiment.
 
 This analysis is limited by its use of static variables, which may not capture shifts in public opinion. For instance, major events like debates can influence voter sentiment, yet the model lacks real-time responsiveness. Additionally, aggregating data from different poll methodologies may introduce bias; for example, online panels may skew younger while live phone surveys often favor older demographics. Future work could include real-time data and refined weighting to enhance adaptability and consistency.
 
