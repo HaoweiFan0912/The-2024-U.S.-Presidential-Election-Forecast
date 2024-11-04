@@ -5,7 +5,7 @@ author:
   - Haowei Fan
   - Fangning Zhang
   - Shaotong Li
-thanks: "Code and data are available at: [https://github.com/HaoweiFan0912/US_Election-Forecast/tree/main]."
+thanks: "Code and data are available at: https://github.com/HaoweiFan0912/US_Election-Forecast/tree/main."
 date: today
 date-format: long
 abstract: "The United States plays a major role in the global technological and economic landscape, with its political leadership having a significant influence on international technology cooperation and economic relations. This project uses multiple linear regression to predict the outcome of the 2024 U.S. presidential election by extracting and analyzing polling data from polls that nominated the same candidates, providing direction to help stakeholders prepare for potential shifts in U.S. policies. The project predicts that Kamala Harris will secure 47.6% of the vote over Donald Trump's 43.5% and presents a straightforward yet effective regression model that does not rely on time-series analysis or external events."
@@ -773,7 +773,7 @@ Score_{Harris} = &\alpha_1Pollscore + \alpha_2Transparency\_score + \alpha_3Dura
 
 ## Validation
 
-First, we verified the assumptions mentioned in the @Model_Overview. The @tbl-vohfm shows the General Variance Inflation Factor (GVIF) for both models, which indicates that all predictors have a GVIF less than 1.3, suggesting no significant multicollinearity.
+First, we verified the assumptions mentioned in the @sec-Model_Overview. The @tbl-vohfm shows the General Variance Inflation Factor (GVIF) for both models, which indicates that all predictors have a GVIF less than 1.3, suggesting no significant multicollinearity.
 
 ```{r}
 #| warning: false
@@ -807,7 +807,7 @@ kable(combined_vif_table, col.names = c("Variable", "Harris", "Trump"))
 
 
 
-The following @fig-mdp presents the diagnostic plots for the Harris and Trump's models. The plots on the left shows the relationship between residuals and predicted values, and since no obvious pattern is observed, our models satisfies the Homoscedasticity assumption. The right-hand plot are a Q-Q plot, and the points align along the diagonal, indicating that residuals are normally distributed and satisfy the Multivariate Normality condition.
+The following @fig-mdp presents the diagnostic plots for the Harris and Trump's models. The plots on the left shows the relationship between residuals and predicted values, and since no obvious pattern is observed, our models satisfies the Homoscedasticity assumption. The right-hand plot are Q-Q plots, and the points align along the diagonal, indicating that residuals are normally distributed and satisfy the Multivariate Normality condition.
 
 ```{r, fig.height= 7, fig.width=14, fig.pos="H"}
 #| warning: false
@@ -878,7 +878,7 @@ print(combined_plot)
 As noted above, our model combines the start and end dates of a poll into the "duration" variable, which prevents it from effectively capturing the time series impact on the estimand. Additionally, due to the weak linear relationship between the estimators and the estimand, the explanatory power of our model, as reflected by the adjusted R-Square, is relatively low. Polynomial Regression or Generalized Linear Models might be better choices in this context. Moreover, when significant relationships exist between estimators, our model might fail.
 
 # Result {#sec-result}
-## featured values used in prediction
+## Featured values used in prediction
 
 In our analysis, we designated specific poll-related features as "featured values" to serve as representative indicators within each candidate's dataset. These featured values were chosen to highlight the most impactful aspects of the polling data that consistently influenced the support scores for Donald Trump and Kamala Harris. By selecting these representative values, we aimed to streamline the analysis and focus on the factors that most strongly characterized each candidate’s data.
 
@@ -1235,4 +1235,5 @@ combined_plot <- wrap_plots(plots, ncol = 2, nrow = 2) +
 # Print the combined plot
 print(combined_plot)
 ```
+\newpage
 # References
