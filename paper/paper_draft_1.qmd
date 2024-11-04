@@ -1014,7 +1014,7 @@ ggplot(predictions, aes(x = Candidate, y = Prediction, fill = Candidate)) +
 ```
 ## Conclusion
 
-Overall, our approach demonstrates how feature engineering and predictive modeling can offer insights into candidate support based on the available data. However, it is important to interpret these results cautiously, as they rely on specific variables and assumptions embedded within the dataset. In this analysis, we aggregated representative feature values for each candidate by using the mean or median for numeric variables, the mode for categorical variables, and the most frequent occurrence for Boolean values. Further refinement and additional data could enhance the robustness of these predictions, contributing to a more comprehensive forecast in future studies.
+The results indicate that high transparency scores and reliable polling methods improve prediction quality, while careful attention to demographic representation—such as sample size and population type—ensures the polling data reflects the broader electorate. The model forecasts a slight lead for Kamala Harris, with an estimated 47.6% support compared to 43.5% for Donald Trump, underscoring the essential role of reliable data sources in public opinion forecasting. These findings highlight the importance of stringent polling standards and precise demographic selection in enhancing the predictive accuracy of electoral models.
 
 # Discussion
 
