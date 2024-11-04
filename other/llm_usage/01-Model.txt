@@ -1,0 +1,581 @@
+LLM: ChatGPT-4o.
+Date: 2 November 2024
+
+
+User：
+
+# Load the Trump and Harris linear models
+trump_linear_model <- readRDS(here::here("models", "Trump_model.rds"))
+harris_linear_model <- readRDS(here::here("models", "Harris_model.rds"))
+
+trump_test <- read_parquet(here::here("data/02-analysis_data/02-testing", "test_Trump.parquet")) 
+harris_test <- read_parquet(here::here("data/02-analysis_data/02-testing", "test_Harris.parquet")) 
+
+convert_to_logical <- function(df) {
+  if ("hypothetical" %in% names(df) && !is.logical(df$hypothetical)) {
+    df$hypothetical <- as.logical(df$hypothetical)
+  }
+  return(df)
+}
+
+trump_test <- convert_to_logical(trump_test)
+harris_test <- convert_to_logical(harris_test)
+
+# Make predictions using the linear models
+trump_test$Predicted_Support <- predict(trump_linear_model, newdata = trump_test)
+harris_test$Predicted_Support <- predict(harris_linear_model, newdata = harris_test)
+
+# Combine predictions into a single dataframe for plotting
+predictions_df <- data.frame(
+  Candidate = c("Donald Trump", "Kamala Harris"),
+  Predicted_Support = c(mean(trump_test$Predicted_Support, na.rm = TRUE), 
+                        mean(harris_test$Predicted_Support, na.rm = TRUE))
+)
+
+# Create a bar plot for predicted support
+bar_plot <- ggplot(predictions_df, aes(x = Candidate, y = Predicted_Support, fill = Candidate)) +
+  geom_bar(stat = "identity", width = 0.6, color = "white") +
+  geom_text(aes(label = paste0(round(Predicted_Support, 1), "%")), 
+            vjust = -0.5, size = 5) +
+  labs(title = "Average Predicted Support for Trump and Harris (Linear Model)",
+       x = "Candidate",
+       y = "Predicted Support (%)") +
+  theme_minimal() +
+  scale_fill_manual(values = c("Donald Trump" = "skyblue", "Kamala Harris" = "salmon"))
+
+# Print the bar plot
+print(bar_plot)
+
+# Prepare data for scatter plot of actual vs. predicted values
+combined_test_data <- bind_rows(
+  trump_test %>% select(Actual_Support = pct, Predicted_Support) %>% mutate(Candidate = "Donald Trump"),
+  harris_test %>% select(Actual_Support = pct, Predicted_Support) %>% mutate(Candidate = "Kamala Harris")
+)
+
+# Create a scatter plot for actual vs. predicted support
+scatter_plot <- ggplot(combined_test_data, aes(x = Actual_Support, y = Predicted_Support, color = Candidate)) +
+  geom_point(alpha = 0.6) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") + # Reference line
+  labs(title = "Actual vs. Predicted Support (Linear Model)",
+       x = "Actual Support (%)",
+       y = "Predicted Support (%)") +
+  theme_minimal() +
+  scale_color_manual(values = c("Donald Trump" = "skyblue", "Kamala Harris" = "salmon"))
+
+# Print the scatter plot
+print(scatter_plot)
+# 1. Density Plot of Predicted Support
+density_plot <- ggplot() +
+  geom_density(data = trump_test, aes(x = Predicted_Support), fill = "skyblue", alpha = 0.5) +
+  geom_density(data = harris_test, aes(x = Predicted_Support), fill = "salmon", alpha = 0.5) +
+  labs(title = "Density Plot of Predicted Support for Trump and Harris",
+       x = "Predicted Support",
+       y = "Density") +
+  theme_minimal()
+
+# 2. Histogram of Predicted Support
+histogram_plot <- ggplot() +
+  geom_histogram(data = trump_test, aes(x = Predicted_Support), fill = "skyblue", alpha = 0.5, bins = 15) +
+  geom_histogram(data = harris_test, aes(x = Predicted_Support), fill = "salmon", alpha = 0.5, bins = 15) +
+  labs(title = "Histogram of Predicted Support for Trump and Harris",
+       x = "Predicted Support",
+       y = "Frequency") +
+  theme_minimal()
+
+# Display both plots together
+grid.arrange(density_plot, histogram_plot, ncol = 1)
+
+
+The model has changed into: 
+Trump_model <- lm(
+  score ~ pollscore + transparency_score + duration + sample_size + population + 
+    ranked_choice_reallocated + hypothetical + methodology, data = Trump)
+Harris_model <- lm(
+  score ~ pollscore + transparency_score + duration + sample_size + population + 
+    ranked_choice_reallocated + hypothetical + methodology, data = Harris)
+
+I also provide you with the rds file of the model, please rewrite it for me
+
+ChatGPT：
+
+I'll adjust your code to accommodate the new model specifications. Here's the updated R code:
+r
+# Load the Trump and Harris linear models
+trump_linear_model <- readRDS(here::here("models", "Trump_model.rds"))
+harris_linear_model <- readRDS(here::here("models", "Harris_model.rds"))
+
+trump_test <- read_parquet(here::here("data/02-analysis_data/02-testing", "test_Trump.parquet")) 
+harris_test <- read_parquet(here::here("data/02-analysis_data/02-testing", "test_Harris.parquet")) 
+
+# Convert hypothetical column to logical if necessary
+convert_to_logical <- function(df) {
+  if ("hypothetical" %in% names(df) && !is.logical(df$hypothetical)) {
+    df$hypothetical <- as.logical(df$hypothetical)
+  }
+  return(df)
+}
+
+trump_test <- convert_to_logical(trump_test)
+harris_test <- convert_to_logical(harris_test)
+
+# Make predictions using the updated linear models
+trump_test$Predicted_Support <- predict(trump_linear_model, newdata = trump_test)
+harris_test$Predicted_Support <- predict(harris_linear_model, newdata = harris_test)
+
+# Combine predictions into a single dataframe for plotting
+predictions_df <- data.frame(
+  Candidate = c("Donald Trump", "Kamala Harris"),
+  Predicted_Support = c(mean(trump_test$Predicted_Support, na.rm = TRUE), 
+                        mean(harris_test$Predicted_Support, na.rm = TRUE))
+)
+
+# Create a bar plot for predicted support
+bar_plot <- ggplot(predictions_df, aes(x = Candidate, y = Predicted_Support, fill = Candidate)) +
+  geom_bar(stat = "identity", width = 0.6, color = "white") +
+  geom_text(aes(label = paste0(round(Predicted_Support, 1), "%")), 
+            vjust = -0.5, size = 5) +
+  labs(title = "Average Predicted Support for Trump and Harris (Linear Model)",
+       x = "Candidate",
+       y = "Predicted Support (%)") +
+  theme_minimal() +
+  scale_fill_manual(values = c("Donald Trump" = "skyblue", "Kamala Harris" = "salmon"))
+
+# Print the bar plot
+print(bar_plot)
+
+# Prepare data for scatter plot of actual vs. predicted values
+combined_test_data <- bind_rows(
+  trump_test %>% select(Actual_Support = score, Predicted_Support) %>% mutate(Candidate = "Donald Trump"),
+  harris_test %>% select(Actual_Support = score, Predicted_Support) %>% mutate(Candidate = "Kamala Harris")
+)
+
+# Create a scatter plot for actual vs. predicted support
+scatter_plot <- ggplot(combined_test_data, aes(x = Actual_Support, y = Predicted_Support, color = Candidate)) +
+  geom_point(alpha = 0.6) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") + # Reference line
+  labs(title = "Actual vs. Predicted Support (Linear Model)",
+       x = "Actual Support (%)",
+       y = "Predicted Support (%)") +
+  theme_minimal() +
+  scale_color_manual(values = c("Donald Trump" = "skyblue", "Kamala Harris" = "salmon"))
+
+# Print the scatter plot
+print(scatter_plot)
+
+# 1. Density Plot of Predicted Support
+density_plot <- ggplot() +
+  geom_density(data = trump_test, aes(x = Predicted_Support), fill = "skyblue", alpha = 0.5) +
+  geom_density(data = harris_test, aes(x = Predicted_Support), fill = "salmon", alpha = 0.5) +
+  labs(title = "Density Plot of Predicted Support for Trump and Harris",
+       x = "Predicted Support",
+       y = "Density") +
+  theme_minimal()
+
+# 2. Histogram of Predicted Support
+histogram_plot <- ggplot() +
+  geom_histogram(data = trump_test, aes(x = Predicted_Support), fill = "skyblue", alpha = 0.5, bins = 15) +
+  geom_histogram(data = harris_test, aes(x = Predicted_Support), fill = "salmon", alpha = 0.5, bins = 15) +
+  labs(title = "Histogram of Predicted Support for Trump and Harris",
+       x = "Predicted Support",
+       y = "Frequency") +
+  theme_minimal()
+
+# Display both plots together
+grid.arrange(density_plot, histogram_plot, ncol = 1)
+This revised code incorporates the new model variables (pollscore, transparency_score, duration, sample_size, population, ranked_choice_reallocated, hypothetical, and methodology) into the data predictions for both Trump and Harris models. Adjustments ensure alignment with the updated model definitions.
+
+User:
+
+Error in model.frame.default(Terms, newdata, na.action = na.action, xlev = object$xlevels) : 
+  factor population has new levels v
+
+ChatGPT:
+
+
+The error occurs because the population variable in newdata (your trump_test or harris_test data frames) contains levels that were not present in the original model's training data, such as a new category "v" in the population variable.
+
+To handle this, you can adjust the factor levels in the test data to align with the levels used during model training. Here's how you can modify the population variable in your test data:
+
+Ensure Factor Consistency: Use factor with the levels from the original model to avoid introducing new levels.
+Here's the updated code:
+
+r
+
+# Adjust factor levels in test data to match the training data levels
+trump_test$population <- factor(trump_test$population, levels = levels(trump_linear_model$model$population))
+harris_test$population <- factor(harris_test$population, levels = levels(harris_linear_model$model$population))
+
+# Make predictions using the adjusted test data
+trump_test$Predicted_Support <- predict(trump_linear_model, newdata = trump_test)
+harris_test$Predicted_Support <- predict(harris_linear_model, newdata = harris_test)
+
+# Combine predictions into a single dataframe for plotting
+predictions_df <- data.frame(
+  Candidate = c("Donald Trump", "Kamala Harris"),
+  Predicted_Support = c(mean(trump_test$Predicted_Support, na.rm = TRUE), 
+                        mean(harris_test$Predicted_Support, na.rm = TRUE))
+)
+
+# Create a bar plot for predicted support
+bar_plot <- ggplot(predictions_df, aes(x = Candidate, y = Predicted_Support, fill = Candidate)) +
+  geom_bar(stat = "identity", width = 0.6, color = "white") +
+  geom_text(aes(label = paste0(round(Predicted_Support, 1), "%")), 
+            vjust = -0.5, size = 5) +
+  labs(title = "Average Predicted Support for Trump and Harris (Linear Model)",
+       x = "Candidate",
+       y = "Predicted Support (%)") +
+  theme_minimal() +
+  scale_fill_manual(values = c("Donald Trump" = "skyblue", "Kamala Harris" = "salmon"))
+
+# Print the bar plot
+print(bar_plot)
+
+# Continue with the rest of the code as it is.
+This adjustment ensures that population in trump_test and harris_test has the same levels as the models expect, preventing the error. Let me know if you encounter further issues!
+
+User:
+
+nothing is displayed
+
+ChatGPT：
+
+The issue you're encountering, where no data appears in the plots, could be due to several reasons:
+
+Empty or Mismatched Data: Check if the trump_test and harris_test data frames contain any rows after applying the factor level adjustments. If they are empty or do not contain the columns used in the model, this would result in empty plots.
+
+Error in Predictions: If the predict function could not generate predictions due to incompatible data (e.g., new levels in categorical variables or missing values), it would return NA values, causing the plots to appear blank.
+
+To troubleshoot and resolve this:
+
+Check Data Frame Content: Run the following code to inspect the contents of trump_test and harris_test:
+
+r
+print(head(trump_test))
+print(head(harris_test))
+summary(trump_test$Predicted_Support)
+summary(harris_test$Predicted_Support)
+Verify Predicted Values: Ensure Predicted_Support has valid values (not all NA). If you see NA values, it indicates an issue with the predictions due to data mismatch or missing values.
+
+Handle Missing Data: If there are missing values in population or other factors, you can either impute them or filter out rows with missing values. For example:
+
+r
+trump_test <- trump_test %>% drop_na(Predicted_Support)
+harris_test <- harris_test %>% drop_na(Predicted_Support)
+Try these checks and adjustments, and let me know if the plots still appear empty.
+
+User:
+
+print(head(trump_test))
+# A tibble: 6 × 11
+  numeric_grade pollscore methodology transparency_score sample_size population ranked_choice_realloca…¹ hypothetical score
+          <dbl>     <dbl> <chr>                    <dbl>       <dbl> <fct>      <lgl>                    <lgl>        <dbl>
+1           1.9      -0.3 level3                       3        2086 NA         FALSE                    TRUE          44  
+2           1.3       0.1 level3                       1         600 NA         FALSE                    TRUE          47  
+3           1.4       0   level2                       4         568 NA         FALSE                    TRUE          45  
+4           2.9      -0.9 level3                       9        1708 NA         FALSE                    FALSE         48  
+5           1.9      -0.3 level3                       3        4000 NA         FALSE                    TRUE          41  
+6           2.2      -0.4 level2                       6         851 NA         FALSE                    TRUE          45.6
+# ℹ abbreviated name: ¹​ranked_choice_reallocated
+# ℹ 2 more variables: duration <dbl>, Predicted_Support <dbl>
+> print(head(harris_test))
+# A tibble: 6 × 11
+  numeric_grade pollscore methodology transparency_score sample_size population ranked_choice_realloca…¹ hypothetical score
+          <dbl>     <dbl> <chr>                    <dbl>       <dbl> <fct>      <lgl>                    <lgl>        <dbl>
+1           3        -1.5 level4                       9         656 NA         FALSE                    FALSE         39  
+2           2.6      -0.7 level4                       4        1001 NA         FALSE                    FALSE         46  
+3           2.5      -0.4 level3                       8         589 NA         FALSE                    FALSE         48  
+4           2        -0.3 level3                       5         800 NA         FALSE                    FALSE         36.7
+5           3        -1.5 level4                       9         713 NA         FALSE                    FALSE         42  
+6           2.9      -1   level4                       8        1000 NA         FALSE                    FALSE         49.7
+# ℹ abbreviated name: ¹​ranked_choice_reallocated
+# ℹ 2 more variables: duration <dbl>, Predicted_Support <dbl>
+> summary(trump_test$Predicted_Support)
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+     NA      NA      NA     NaN      NA      NA    1695 
+> summary(harris_test$Predicted_Support)
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+     NA      NA      NA     NaN      NA      NA     698 
+     
+ChatGPT：
+
+The summaries show that all values in Predicted_Support are NA, indicating that the predictions did not compute successfully. This likely happened because the population column in both trump_test and harris_test contains only NA values, which prevents the predict function from processing them properly.
+
+To address this, we have a couple of options:
+
+Check for the presence of population levels in the training data: If population is essential in the model, but the test data has missing values, you might need to impute or remove this column from the test data (if it's not critical) to allow predictions to work.
+
+Exclude population from predictions: Temporarily remove or impute missing values in population. If you know the intended levels for population, you could assign them.
+
+Here’s how you can proceed by removing population for testing purposes:
+
+r
+# Remove 'population' column temporarily if it contains only NA values
+trump_test_no_pop <- trump_test %>% select(-population)
+harris_test_no_pop <- harris_test %>% select(-population)
+
+# Make predictions using the modified test data
+trump_test$Predicted_Support <- predict(trump_linear_model, newdata = trump_test_no_pop)
+harris_test$Predicted_Support <- predict(harris_linear_model, newdata = harris_test_no_pop)
+
+# Check if predictions are now successful
+summary(trump_test$Predicted_Support)
+summary(harris_test$Predicted_Support)
+If this approach works and predictions are calculated, you can proceed with plotting. If population is essential for the model, we may need to revisit the model or address the data quality in population for the test set. Let me know if this helps!
+
+User:
+
+it still doesn't work, please rewrite the whole coding, forgot what I've written based on these roots:
+# Load the Trump and Harris linear models
+trump_linear_model <- readRDS(here::here("models", "Trump_model.rds"))
+harris_linear_model <- readRDS(here::here("models", "Harris_model.rds"))
+
+# Read the test data  (replace with parquet reading code when finalized)
+trump_test <- read_parquet(here::here("data/02-analysis_data/02-testing", "test_Trump.parquet"))
+harris_test <- read_parquet(here::here("data/02-analysis_data/02-testing", "test_Harris.parquet"))
+
+ChatGPT：
+
+Here's a completely rewritten code based on the root structure you provided. This code starts from scratch, following the steps you outlined: loading the models, reading the test data (using parquet format in the final version), preparing the data, making predictions, and visualizing the results.
+
+r
+# Load necessary libraries
+library(here)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(arrow) # For reading Parquet files
+
+# Load the Trump and Harris linear models
+trump_linear_model <- readRDS(here::here("models", "Trump_model.rds"))
+harris_linear_model <- readRDS(here::here("models", "Harris_model.rds"))
+
+# Read the test data (replace with Parquet reading code when finalized)
+trump_test <- read_parquet(here::here("data/02-analysis_data/02-testing", "test_Trump.parquet"))
+harris_test <- read_parquet(here::here("data/02-analysis_data/02-testing", "test_Harris.parquet"))
+
+# Convert population column to a factor with levels from the training data if necessary
+trump_test$population <- factor(trump_test$population, levels = levels(trump_linear_model$model$population))
+harris_test$population <- factor(harris_test$population, levels = levels(harris_linear_model$model$population))
+
+# Ensure hypothetical column is logical
+if ("hypothetical" %in% names(trump_test) && !is.logical(trump_test$hypothetical)) {
+  trump_test$hypothetical <- as.logical(trump_test$hypothetical)
+}
+if ("hypothetical" %in% names(harris_test) && !is.logical(harris_test$hypothetical)) {
+  harris_test$hypothetical <- as.logical(harris_test$hypothetical)
+}
+
+# Make predictions using the linear models
+trump_test$Predicted_Support <- predict(trump_linear_model, newdata = trump_test)
+harris_test$Predicted_Support <- predict(harris_linear_model, newdata = harris_test)
+
+# Combine predictions into a single dataframe for bar plot
+predictions_df <- data.frame(
+  Candidate = c("Donald Trump", "Kamala Harris"),
+  Predicted_Support = c(mean(trump_test$Predicted_Support, na.rm = TRUE), 
+                        mean(harris_test$Predicted_Support, na.rm = TRUE))
+)
+
+# Create a bar plot for average predicted support
+bar_plot <- ggplot(predictions_df, aes(x = Candidate, y = Predicted_Support, fill = Candidate)) +
+  geom_bar(stat = "identity", width = 0.6, color = "white") +
+  geom_text(aes(label = paste0(round(Predicted_Support, 1), "%")), 
+            vjust = -0.5, size = 5) +
+  labs(title = "Average Predicted Support for Trump and Harris (Linear Model)",
+       x = "Candidate",
+       y = "Predicted Support (%)") +
+  theme_minimal() +
+  scale_fill_manual(values = c("Donald Trump" = "skyblue", "Kamala Harris" = "salmon"))
+
+# Print the bar plot
+print(bar_plot)
+
+# Prepare data for scatter plot of actual vs. predicted values
+combined_test_data <- bind_rows(
+  trump_test %>% select(Actual_Support = score, Predicted_Support) %>% mutate(Candidate = "Donald Trump"),
+  harris_test %>% select(Actual_Support = score, Predicted_Support) %>% mutate(Candidate = "Kamala Harris")
+)
+
+# Create a scatter plot for actual vs. predicted support
+scatter_plot <- ggplot(combined_test_data, aes(x = Actual_Support, y = Predicted_Support, color = Candidate)) +
+  geom_point(alpha = 0.6) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") + # Reference line
+  labs(title = "Actual vs. Predicted Support (Linear Model)",
+       x = "Actual Support (%)",
+       y = "Predicted Support (%)") +
+  theme_minimal() +
+  scale_color_manual(values = c("Donald Trump" = "skyblue", "Kamala Harris" = "salmon"))
+
+# Print the scatter plot
+print(scatter_plot)
+
+# Create density and histogram plots for predicted support
+# 1. Density Plot of Predicted Support
+density_plot <- ggplot() +
+  geom_density(data = trump_test, aes(x = Predicted_Support), fill = "skyblue", alpha = 0.5) +
+  geom_density(data = harris_test, aes(x = Predicted_Support), fill = "salmon", alpha = 0.5) +
+  labs(title = "Density Plot of Predicted Support for Trump and Harris",
+       x = "Predicted Support",
+       y = "Density") +
+  theme_minimal()
+
+# 2. Histogram of Predicted Support
+histogram_plot <- ggplot() +
+  geom_histogram(data = trump_test, aes(x = Predicted_Support), fill = "skyblue", alpha = 0.5, bins = 15) +
+  geom_histogram(data = harris_test, aes(x = Predicted_Support), fill = "salmon", alpha = 0.5, bins = 15) +
+  labs(title = "Histogram of Predicted Support for Trump and Harris",
+       x = "Predicted Support",
+       y = "Frequency") +
+  theme_minimal()
+
+# Display both density and histogram plots together
+grid.arrange(density_plot, histogram_plot, ncol = 1)
+
+User:
+
+Error in skewness(col_data, na.rm = TRUE) : 
+  could not find function "skewness"
+  
+ChatGPT：
+
+The skewness function is from the moments package, which calculates skewness for numeric data. You’ll need to install and load the moments package if it's not already installed.
+
+Here’s how to fix the error:
+
+Install and load the moments package (if you haven’t already):
+
+r
+install.packages("moments")  # Run this line if you don't have the package
+library(moments)
+Use the updated code: After loading the moments package, the code should work without errors. Here’s the relevant part of the code with a reminder to load the package:
+
+r
+# Load necessary libraries
+library(here)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(arrow)  # For reading Parquet files
+library(moments)  # For skewness function
+
+# Define the function to select feature values
+select_feature_value <- function(data, candidate_name) {
+  feature_values <- list()
+  
+  for (col_name in names(data)) {
+    col_data <- data[[col_name]]
+    
+    # Numeric variables: Choose mean or median based on skewness
+    if (is.numeric(col_data)) {
+      if (skewness(col_data, na.rm = TRUE) < 1) {
+        feature_values[[col_name]] <- mean(col_data, na.rm = TRUE)
+      } else {
+        feature_values[[col_name]] <- median(col_data, na.rm = TRUE)
+      }
+    }
+    
+    # Categorical variables: Choose mode
+    else if (is.character(col_data)) {
+      feature_values[[col_name]] <- Mode(col_data)
+    }
+    
+    # Boolean variables: Calculate the proportion of TRUE values
+    else if (is.logical(col_data)) {
+      feature_values[[col_name]] <- mean(col_data, na.rm = TRUE) * 100
+    }
+  }
+  
+  feature_values[["Candidate"]] <- candidate_name
+  return(feature_values)
+}
+
+# Define a Mode function
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+# Apply the summary function for each candidate's data as before
+After loading the moments library, the skewness function should be recognized, and the code should execute without the error. Let me know if this resolves the issue or if you encounter any further problems.
+
+User:
+
+Error in if (skewness(col_data, na.rm = TRUE) < 1) { : 
+  missing value where TRUE/FALSE needed
+  
+ChatGPT：
+
+The error indicates that skewness(col_data, na.rm = TRUE) is returning NA, which usually happens if col_data contains only NA values or very few non-NA values. We can add a check to handle such cases.
+
+Here’s an updated version of the code, with a check to ensure that skewness is calculated only when there are enough valid values in col_data. If skewness returns NA, we can default to median as a fallback.
+
+r
+# Load necessary libraries
+library(here)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(arrow)  # For reading Parquet files
+library(moments)  # For skewness function
+
+# Define the function to select feature values based on variable type
+select_feature_value <- function(data, candidate_name) {
+  feature_values <- list()
+  
+  for (col_name in names(data)) {
+    col_data <- data[[col_name]]
+    
+    # Numeric variables: Choose mean or median based on skewness
+    if (is.numeric(col_data)) {
+      # Check if there are enough valid values to compute skewness
+      if (sum(!is.na(col_data)) > 1) {  # Ensure there is more than one valid value
+        skew_val <- skewness(col_data, na.rm = TRUE)
+        if (!is.na(skew_val) && skew_val < 1) {
+          feature_values[[col_name]] <- mean(col_data, na.rm = TRUE)
+        } else {
+          feature_values[[col_name]] <- median(col_data, na.rm = TRUE)
+        }
+      } else {
+        # Default to median if skewness cannot be computed
+        feature_values[[col_name]] <- median(col_data, na.rm = TRUE)
+      }
+    }
+    
+    # Categorical variables: Choose mode
+    else if (is.character(col_data)) {
+      feature_values[[col_name]] <- Mode(col_data)
+    }
+    
+    # Boolean variables: Calculate the proportion of TRUE values
+    else if (is.logical(col_data)) {
+      feature_values[[col_name]] <- mean(col_data, na.rm = TRUE) * 100
+    }
+  }
+  
+  # Add the candidate name to the results
+  feature_values[["Candidate"]] <- candidate_name
+  return(feature_values)
+}
+
+# Define a function to calculate the mode (most frequent value)
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+# Calculate feature values for each candidate
+trump_features <- select_feature_value(trump_test, "Donald Trump")
+harris_features <- select_feature_value(harris_test, "Kamala Harris")
+# Assuming there's data for Biden; otherwise, remove this line
+biden_features <- select_feature_value(biden_test, "Joe Biden")
+
+# Combine results into a single data frame for easy viewing
+all_candidate_features <- bind_rows(trump_features, harris_features, biden_features)
+
+# Display the final table of feature values
+print(all_candidate_features)
+Explanation of Changes
+Check for Valid Data: Before calculating skewness, we check if col_data has more than one non-NA value. This ensures skewness can be computed.
+Fallback to Median: If skewness returns NA (e.g., due to too few values), we use median as a default representative value.
+Safety Checks: The condition !is.na(skew_val) ensures we handle cases where skewness may still return NA even with sufficient data.
+This code should now handle cases where some columns have insufficient data or are entirely NA. Let me know if it resolves the issue!
