@@ -115,11 +115,11 @@ ggplot(raw_data, aes(x = sample_size)) +
 candidate_ranking <- raw_data %>%
   group_by(candidate_name) %>%
   summarize(
-    poll_count = n(),                    
-    avg_weighted_pct = mean(poll_count * pct, na.rm = TRUE)  
+    poll_count = n(),
+    avg_weighted_pct = mean(poll_count * pct, na.rm = TRUE)
   ) %>%
-  arrange(desc(avg_weighted_pct)) %>%    
-  slice_head(n = 5)                       
+  arrange(desc(avg_weighted_pct)) %>%
+  slice_head(n = 5)
 print(candidate_ranking)
 ```
 

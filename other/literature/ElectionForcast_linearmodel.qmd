@@ -20,8 +20,8 @@ library(ggplot2)
 library(patchwork)
 library(gridExtra)
 library(arrow)
-library(knitr)  
-library(kableExtra) 
+library(knitr)
+library(kableExtra)
 ```
 
 # Overview
@@ -81,8 +81,10 @@ candidate_data$Harris_Predicted_Support <- predict(harris_linear_model, newdata 
 # Create a combined data frame for plotting purposes
 predictions_df <- data.frame(
   Candidate = c("Donald Trump", "Kamala Harris"),
-  Predicted_Support = c(mean(candidate_data$Trump_Predicted_Support, na.rm = TRUE), 
-                        mean(candidate_data$Harris_Predicted_Support, na.rm = TRUE))
+  Predicted_Support = c(
+    mean(candidate_data$Trump_Predicted_Support, na.rm = TRUE),
+    mean(candidate_data$Harris_Predicted_Support, na.rm = TRUE)
+  )
 )
 
 # Remove the prediction and score columns from the candidate data
@@ -97,14 +99,14 @@ feature_values_table <- candidate_data %>%
   pivot_longer(cols = everything(), names_to = "Variable", values_to = "Value") %>%
   mutate(Candidate = rep(c("Donald Trump", "Kamala Harris"), each = ncol(candidate_data))) %>%
   select(Candidate, Variable, Value) %>%
-  pivot_wider(names_from = "Candidate", values_from = "Value")  # Reshape into two columns
+  pivot_wider(names_from = "Candidate", values_from = "Value") # Reshape into two columns
 
 # Display the feature values table in a two-column, aesthetic format
 kable(feature_values_table, align = c("l", "c", "c"), caption = "Candidate Feature Summary") %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = FALSE) %>%
-  column_spec(1, bold = TRUE, width = "6cm") %>%   # Widen the Variable column
-  column_spec(2, width = "5cm") %>%                # Increase width of Trump column
-  column_spec(3, width = "5cm") %>%                # Increase width of Harris column
+  column_spec(1, bold = TRUE, width = "6cm") %>% # Widen the Variable column
+  column_spec(2, width = "5cm") %>% # Increase width of Trump column
+  column_spec(3, width = "5cm") %>% # Increase width of Harris column
   add_header_above(c(" " = 1, "Candidate Feature Summary" = 2))
 ```
 
@@ -168,14 +170,17 @@ The hypothetical column was converted to logical data type where necessary, ensu
 # Adjust the bar plot height
 bar_plot <- ggplot(predictions_df, aes(x = Candidate, y = Predicted_Support, fill = Candidate)) +
   geom_bar(stat = "identity", width = 0.6, color = "white") +
-  geom_text(aes(label = paste0(round(Predicted_Support, 1), "%")), 
-            vjust = -0.5, size = 5) +
-  labs(title = "",
-       x = "Candidate",
-       y = "Predicted Support (%)") +
+  geom_text(aes(label = paste0(round(Predicted_Support, 1), "%")),
+    vjust = -0.5, size = 5
+  ) +
+  labs(
+    title = "",
+    x = "Candidate",
+    y = "Predicted Support (%)"
+  ) +
   theme_minimal() +
   scale_fill_manual(values = c("Donald Trump" = "skyblue", "Kamala Harris" = "salmon")) +
-  ylim(0, max(predictions_df$Predicted_Support) * 1.2)  # Set upper limit to make space for labels
+  ylim(0, max(predictions_df$Predicted_Support) * 1.2) # Set upper limit to make space for labels
 
 # Print the bar plot
 print(bar_plot)
@@ -191,16 +196,15 @@ pie_chart <- ggplot(pie_data, aes(x = "", y = Support, fill = Candidate)) +
   geom_bar(stat = "identity", width = 1, color = "white") +
   coord_polar("y", start = 0) +
   labs(title = "") +
-  theme_void() +  # Remove background and axis
+  theme_void() + # Remove background and axis
   theme(legend.position = "right") +
   scale_fill_manual(values = c("Donald Trump" = "skyblue", "Kamala Harris" = "salmon", "Other Candidates" = "grey")) +
-  geom_text(aes(label = ifelse(Support > 5, paste0(round(Support, 1), "%"), "")), 
-            position = position_stack(vjust = 0.5), color = "white", size = 5)
+  geom_text(aes(label = ifelse(Support > 5, paste0(round(Support, 1), "%"), "")),
+    position = position_stack(vjust = 0.5), color = "white", size = 5
+  )
 
 # Print the pie chart
 print(pie_chart)
-
-
 ```
 
 

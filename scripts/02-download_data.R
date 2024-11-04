@@ -15,6 +15,4 @@ url <- "https://projects.fivethirtyeight.com/polls/data/president_polls.csv"
 the_raw_data <- read.csv(url)
 
 #### Save data ####
-write_csv(the_raw_data, "data/01-raw_data/raw_data.csv") 
-
-
+write_csv(the_raw_data, "data/01-raw_data/raw_data.csv")
