@@ -62,7 +62,7 @@ Contains auxiliary files and documentation.
 
 -   `01-Model`: Resources related to model usage.
 -   `02-Latex`: LaTeX resources for document preparation.
--   `03-Plots_and_tables`: Resources for plotting and tables. \#### `sketches/`: Visual or conceptual sketches related to the project. \#### `variables_descriptions/`: Detailed descriptions of the variables used in the dataset.
+-   `03-Plots_and_tables`: Resources for plotting and tables.
 
 #### `sketches/`: This folder contains preliminary drafts, diagrams, or conceptual sketches related to the project.
 

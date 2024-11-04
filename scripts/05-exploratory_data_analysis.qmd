@@ -9,6 +9,11 @@
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 #### Workspace setup ####
+
+install.packages("tidyverse")
+install.packages("patchwork")
+install.packages("moments")
+
 library(tidyverse)
 library(patchwork)
 library(moments)

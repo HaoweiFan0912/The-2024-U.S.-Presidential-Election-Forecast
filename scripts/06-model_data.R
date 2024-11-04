@@ -9,6 +9,7 @@
 
 
 #### Workspace setup ####
+install.packages("arrow")
 library(arrow)
 
 # Define paths to each candidate's analysis data (training and testing data)

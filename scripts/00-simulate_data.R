@@ -8,6 +8,9 @@
 # Any other information needed? None
 
 #### Setup ####
+# install required packages
+install.packages("tidyverse")
+install.packages("arrow")
 # Load required libraries
 library(tidyverse)
 library(arrow)
@@ -136,3 +139,4 @@ simulated_candidate_2 <- simulated_candidate_1 %>%
 #### Save data ####
 write_parquet(simulated_candidate_1, "data/00-simulated_data/simulated_candidate_1.parquet")
 write_parquet(simulated_candidate_2, "data/00-simulated_data/simulated_candidate_2.parquet")
+

@@ -8,8 +8,12 @@
 # Pre-requisites: 00-simulated_data saved and loaded
 # Any other information needed? None
 
-
 #### Workspace setup ####
+
+install.packages("tidyverse")
+install.packages("testthat")
+install.packages("arrow")
+
 library(tidyverse)
 library(testthat)
 library(arrow)

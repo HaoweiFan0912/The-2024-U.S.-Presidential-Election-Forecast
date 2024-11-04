@@ -8,6 +8,13 @@
 # Any other information needed? None
 
 #### Workspace setup ####
+install.packages("tidyverse")
+install.packages("dplyr")
+install.packages("janitor")
+install.packages("tidyr")
+install.packages("lubridate")
+install.packages("arrow")
+
 library(tidyverse)
 library(dplyr)
 library(janitor) # For clean_names
