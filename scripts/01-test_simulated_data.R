@@ -10,9 +10,9 @@
 
 #### Workspace setup ####
 
-install.packages("tidyverse")
-install.packages("testthat")
-install.packages("arrow")
+#install.packages("tidyverse")
+#install.packages("testthat")
+#install.packages("arrow")
 
 library(tidyverse)
 library(testthat)
