@@ -2,7 +2,7 @@
 
 ## Overview
 
-This README provides a structured guide to the project's organization, data sources, processing scripts, and modeling results for predicting candidate support in the 2024 U.S. presidential election. The directory structure includes simulated, raw, and cleaned data, along with model files, scripts, and supporting documentation. Key directories and files are described to facilitate navigation and understanding of the project workflow, from data simulation and preprocessing to model training and evaluation. Additionally, the README outlines the usage of large language models (LLMs) in generating code snippets, documentation, and analysis explanations.
+This paper analyzes the 2024 U.S. presidential election using polling data to forecast voter support for Kamala Harris and Donald Trump. Through a linear regression model, it examines factors like pollster reliability, sample size, and polling duration. The results indicate a slight lead for Harris, highlighting the importance of transparency, demographic representation, and methodological rigor in accurate election forecasting.
 
 ## Directory Structure
 
